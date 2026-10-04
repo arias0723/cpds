@@ -1,0 +1,268 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{listings}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  language=C,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+}
+
+% ----------------------------------------------------------------
+% TODO: fill every line marked with \textbf{TODO} or a LaTeX comment starting with %TODO
+% Comment blocks starting with %NOTE are analysis notes — read them, then write in your own words.
+% Delete all %NOTE and %TODO comments before submitting.
+% ----------------------------------------------------------------
+
+\title{Lab 0: Boada Cluster}
+\author{
+  Jose Ricardo Arias Perez \\
+  jose.ricardo.arias@estudiantat.upc.edu \\\\
+  Group: cpds1118 \\
+  Course 2026/27, Q1 \\\\
+  Concurrency, Parallelism and Distributed Systems (CPDS) \\
+  FIB -- Universitat Polit\`ecnica de Catalunya
+}
+\date{October 2026}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+% ================================================================
+\section{Node Architecture and Memory}
+% ================================================================
+
+% --------------------------------------------------
+\subsection{Architectural characteristics (Question 1)}
+% --------------------------------------------------
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Characteristic} & \textbf{Value} \\
+\midrule
+NUMA nodes per node           & 2 \\
+Sockets per node              & 2 \\
+Cores per socket              & 16 \\
+Threads per core              & 2 \\
+Maximum core frequency        & 3400.0 MHz \\
+L1-I cache size (per core)    & 32\,KB \\
+L1-D cache size (per core)    & 48\,KB \\
+L2 cache size (per core)      & 1280\,KB \\
+Last-level cache (per socket) & 24\,MB \\
+Main memory (per socket)      & $\sim$62\,GB / $\sim$61\,GB \\
+Main memory (total)           & 123\,GB \\
+\bottomrule
+\end{tabular}
+\caption{Architectural characteristics of boada-18.}
+\label{tab:arch}
+\end{table}
+
+% --------------------------------------------------
+\subsection{Architectural diagram (Question 2)}
+% --------------------------------------------------
+
+%TODO: Place your map-boada-18.pdf here. Keep the caption with username and timestamp.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{map-boada-18.pdf}
+\caption{Topology diagram of boada-18 (lstopo output). %TODO: keep original caption visible
+}
+\label{fig:topo}
+\end{figure}
+
+% --------------------------------------------------
+\subsection{NUMA architecture (Question 3)}
+% --------------------------------------------------
+
+%TODO: write your explanation here. Cover:
+%  - What NUMA means (each socket has local memory; remote access is slower).
+%  - Paste or describe the distance matrix from numactl.
+%  - State the ratio as 1:X.
+
+NUMA means Non-Uniform Memory Access, access time depends on which socket owns the memory. \textbf{boada-18} has two sockets, and each socket has its own memory bank (about 62–64 GB). Any core can access any byte of the full 123 GB, but the path differs. When core 0 (socket 0) reads from the memory physically attached to socket 0, it goes directly through the local memory controller. When it reads from socket 1 memory, the request crosses the inter-socket link. That extra hop costs time. \\
+
+These are relative costs defined by the ACPI SLIT. The value 10 is the baseline (local) and 20 is the cost of reaching the other socket's memory.
+
+The distance matrix is shown in Table~\ref{tab:numa-distance}.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{c|cc}
+	oprule
+ & \textbf{Node 0} & \textbf{Node 1} \\
+\midrule
+	extbf{Node 0} & 10 & 20 \\
+	extbf{Node 1} & 20 & 10 \\
+\bottomrule
+\end{tabular}
+\caption{NUMA distance matrix obtained with \texttt{numactl} on boada-18.}
+\label{tab:numa-distance}
+\end{table}
+
+The ratio is \textbf{1:2}, which means that accessing memory on the other socket is twice as expensive as accessing local memory.
+
+% ================================================================
+\section{Timing Sequential and Parallel Executions}
+% ================================================================
+
+% --------------------------------------------------
+\subsection{OpenMP scaling (Question 3)}
+% --------------------------------------------------
+
+%NOTE: Three plots: strong scaling (time + speedup) and weak scaling (efficiency).
+%NOTE: Keep the cpds1118 + timestamp caption in every plot.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{pi_omp-1000000000-1-32-3-strong-boada-18.pdf}
+\caption{OpenMP strong scaling: execution time and speed-up (1--32 threads, $10^9$ iterations).}
+\label{fig:omp-strong}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{pi_omp-100000000-1-32-3-weak-boada-18.pdf}
+\caption{OpenMP weak scaling: parallel efficiency ($10^8$ iterations per thread).}
+\label{fig:omp-weak}
+\end{figure}
+
+%TODO: Add a third figure here if you ran the 64-thread experiment (np_NMAX=64).
+%TODO: \includegraphics[...]{pi_omp-...-64-...-boada-18.pdf}
+
+
+
+
+Key data points from the plots:
+- Strong: T(1)~1.45s, speedup~31 at 32 threads, efficiency~0.97.
+- Weak: efficiency~0.99, nearly flat.
+
+
+{\bfseries Strong scaling}: fixed problem size, varied threads. Ideal speedup = $p$. The measured speedup tracks the ideal line almost perfectly up to 32 threads.
+
+
+
+{\bfseries Weak scaling}: the problem grows proportionally with the number of threads. The ideal is constant execution time, corresponding to efficiency 1; the measurements remain close to 0.99.
+
+The excellent scaling is expected because iterations are independent, the reduction is the only shared result, and the loop has a balanced cyclic distribution. The computation mostly uses registers, so memory traffic and synchronization are limited.
+
+Beyond 32 threads: \textbf{boada-18} has 32 physical cores. Threads 33-64 land on hyperthreads (two threads sharing one core). Performance gain decreases because two threads compete for the same execution resources.
+
+The 64-thread strong-scaling run confirms this effect. The time decreases from $0.047641$ s with 32 threads to only $0.048317$ s with 64 threads in the recorded run, while the speedup changes from about $30.82$ to $30.39$. Thus, adding the 32 hyperthreads provides no additional speedup and introduces a small regression compared with the 32-thread result.
+
+
+% --------------------------------------------------
+\subsection{MPI and hybrid scaling (Question 4)}
+% --------------------------------------------------
+
+\subsubsection{MPI strong scaling (1--32 processes)}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{pi_mpi_collectives-1073741824-1-32-3-strong-mpi-boada-18.pdf}
+\caption{MPI strong scaling: execution time and speed-up (1--32 processes, $2^{30}$ iterations).}
+\label{fig:mpi-strong}
+\end{figure}
+
+The MPI implementation scales almost linearly from 1 to 16 processes. The 16-process run takes $0.752$ s and gives a speedup of $14.69$ relative to the sequential baseline. The apparent gap from ideal scaling is partly due to the baseline mismatch: one MPI process takes $11.79$ s, whereas the sequential program takes $11.05$ s. Relative to the one-process MPI run, the 16-process efficiency is approximately $0.98$.
+
+The time improves slightly at 17 processes but rises from $0.741$ s to $0.758$ s at 18 processes. This transition is consistent with the node topology: each socket has 16 physical cores, so increasing the process count beyond the available physical cores per socket can introduce resource sharing and placement effects. From 19 to 32 processes, execution time decreases again, but the final speedup is $25.40$ rather than the ideal 32, giving an efficiency of about $0.79$ relative to the sequential program. Communication is not the main bottleneck because the program performs only one reduction of a single accumulated value after the computation.
+
+
+\subsubsection{Hybrid MPI + OpenMP (2 processes, varying threads)}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{rr}
+\toprule
+\textbf{Total workers (2 MPI $\times$ threads)} & \textbf{Time (s)} \\
+\midrule
+ 2 (2 $\times$  1) & 5.930 \\
+ 4 (2 $\times$  2) & 2.971 \\
+ 8 (2 $\times$  4) & 1.490 \\
+16 (2 $\times$  8) & 0.751 \\
+24 (2 $\times$ 12) & 0.497 \\
+32 (2 $\times$ 16) & 0.373 \\
+40 (2 $\times$ 20) & 0.299 \\
+48 (2 $\times$ 24) & 0.249 \\
+56 (2 $\times$ 28) & 0.213 \\
+64 (2 $\times$ 32) & 0.187 \\
+\bottomrule
+\end{tabular}
+\caption{Elapsed time for 2 MPI processes with varying OpenMP threads per process (two nodes).}
+\label{tab:hybrid}
+\end{table}
+
+\subsubsection{Summary of key execution times}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Configuration} & \textbf{Time (s)} & \textbf{Speedup vs seq} & \textbf{Efficiency} \\
+\midrule
+Sequential (\texttt{pi\_seq})              & 11.05  & 1.00  & --- \\
+32 MPI processes                           &  0.435 & 25.40 & 0.79 \\
+2 MPI $\times$ 32 threads (2 nodes)        &  0.187 & 59.07 & 0.92 \\
+2 MPI $\times$ 32 threads (1 node)         & \textbf{TODO} & \textbf{TODO} & \textbf{TODO} \\
+\bottomrule
+\end{tabular}
+\caption{Comparison of key configurations ($2^{30}$ iterations).}
+\label{tab:summary}
+\end{table}
+
+%TODO: Run  sbatch submit-mpi2-omp.sh  with  #SBATCH --nodes=1  and fill the last row.
+
+%NOTE: Points to cover:
+%NOTE:
+%NOTE: Q: Was 32 MPI faster or slower than 2x16 threads?
+%NOTE:    32 MPI: 0.435 s.  2x16 threads: 0.373 s.  Hybrid is faster.
+%NOTE:    Same 32 workers, but hybrid places 16 threads on 16 physical cores per node,
+%NOTE:    while pure MPI likely had processes sharing cores beyond 16.
+%NOTE:
+%NOTE: Q: Speedup of 2x32 threads vs sequential?
+%NOTE:    11.05 / 0.187 = 59.1 on 64 workers. Efficiency 0.92.
+%NOTE:
+%NOTE: Q: Does this match section 1.4.3 with np_NMAX=64 (OMP 64 threads)?
+%NOTE:    OpenMP 64 threads: all on one node (32 physical cores). Threads 33-64
+%NOTE:    share cores via hyperthreads. Limited improvement beyond 32.
+%NOTE:    Hybrid 2x32 on two nodes: 64 threads on 64 physical cores (32 per node).
+%NOTE:    Near-linear scaling continues. Time halves from 2x16 to 2x32.
+%NOTE:
+%NOTE: Q: Why the different behaviour?
+%NOTE:    OpenMP requires shared memory -> confined to one node -> 32 physical cores max.
+%NOTE:    MPI crosses the node boundary. Each rank runs its OpenMP threads locally
+%NOTE:    on a separate machine with its own 32 cores.
+%NOTE:    Two nodes = 64 physical cores. One node = 32 physical cores + hyperthreads.
+%NOTE:
+%NOTE: Q: What happens with --nodes=1?
+%NOTE:    Both MPI ranks land on the same node. 2x32 = 64 threads on 32 cores.
+%NOTE:    Should flatten like the OpenMP 64-thread case.
+%NOTE:    Fill in once you have the number.
+
+%TODO: write your explanation here.
+
+For the same 32 workers, the hybrid configuration with two MPI processes and 16 OpenMP threads per process is faster ($0.373$ s) than 32 MPI processes ($0.435$ s). The hybrid run gives each process 16 threads on a different node, avoiding the process oversubscription and placement effects that appear when many MPI processes share a node.
+
+With two nodes and 64 total OpenMP threads, the hybrid run takes $0.187$ s. Its speedup over the sequential baseline is $11.05/0.187 \approx 59.07$, corresponding to an efficiency of approximately $0.92$. This differs from the single-node OpenMP 64-thread result because the hybrid run uses 64 physical cores across two nodes, whereas one node provides only 32 physical cores and uses hyperthreads for threads 33--64.
+
+The one-node hybrid experiment was not recorded in the available job output. Both ranks in the available run executed on boada-18 and boada-19, so no measured time, speedup, or efficiency can be reported honestly for the requested one-node configuration. Based on the hardware and the OpenMP 64-thread result, it would be expected to flatten after 32 physical cores because $2\times32$ threads would share the node's 32 cores.
+
+
+\end{document}

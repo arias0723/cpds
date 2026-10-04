@@ -1,0 +1,14 @@
+newgraph
+   title : Speed-up wrt one process, weak scaling
+   xaxis 
+      label : MPI #processes
+   yaxis
+      label : Parallel Efficiency
+      min 0
+      mhash 4 
+
+   newcurve
+      linetype solid
+      marktype none
+      pts
+         include ./efficiency.txt

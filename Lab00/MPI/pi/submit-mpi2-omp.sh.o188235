@@ -1,0 +1,51 @@
+mpicc.mpich pi_mpi_omp.c -Wall -Wimplicit-function-declaration -O3 -std=c99 -march=native  -fopenmp  -o pi_mpi_omp 
+Launching 2 MPI processes. Number of threads per process: 1
+Execution on node boada-19, rank 1 out of 2 processors
+Execution on node boada-18, rank 0 out of 2 processors
+Number pi after 1073741824 iterations = 3.141563892364502
+5.930169
+Launching 2 MPI processes. Number of threads per process: 2
+Execution on node boada-18, rank 0 out of 2 processors
+Execution on node boada-19, rank 1 out of 2 processors
+Number pi after 1073741824 iterations = 3.141599416732788
+2.971143
+Launching 2 MPI processes. Number of threads per process: 4
+Execution on node boada-18, rank 0 out of 2 processors
+Execution on node boada-19, rank 1 out of 2 processors
+Number pi after 1073741824 iterations = 3.141614198684692
+1.489875
+Launching 2 MPI processes. Number of threads per process: 8
+Execution on node boada-19, rank 1 out of 2 processors
+Execution on node boada-18, rank 0 out of 2 processors
+Number pi after 1073741824 iterations = 3.141545057296753
+0.750912
+Launching 2 MPI processes. Number of threads per process: 12
+Execution on node boada-18, rank 0 out of 2 processors
+Execution on node boada-19, rank 1 out of 2 processors
+Number pi after 1073741824 iterations = 3.141484737396240
+0.496650
+Launching 2 MPI processes. Number of threads per process: 16
+Execution on node boada-18, rank 0 out of 2 processors
+Execution on node boada-19, rank 1 out of 2 processors
+Number pi after 1073741824 iterations = 3.141489505767822
+0.372952
+Launching 2 MPI processes. Number of threads per process: 20
+Execution on node boada-18, rank 0 out of 2 processors
+Execution on node boada-19, rank 1 out of 2 processors
+Number pi after 1073741824 iterations = 3.141507148742676
+0.298613
+Launching 2 MPI processes. Number of threads per process: 24
+Execution on node boada-19, rank 1 out of 2 processors
+Execution on node boada-18, rank 0 out of 2 processors
+Number pi after 1073741824 iterations = 3.141541719436646
+0.248958
+Launching 2 MPI processes. Number of threads per process: 28
+Execution on node boada-19, rank 1 out of 2 processors
+Execution on node boada-18, rank 0 out of 2 processors
+Number pi after 1073741824 iterations = 3.141533851623535
+0.213391
+Launching 2 MPI processes. Number of threads per process: 32
+Execution on node boada-19, rank 1 out of 2 processors
+Execution on node boada-18, rank 0 out of 2 processors
+Number pi after 1073741824 iterations = 3.141550779342651
+0.187065
