@@ -65,7 +65,7 @@ Main memory (per socket)      & 62.3\,GB (NUMA node 0) / 61.0\,GB (NUMA node 1) 
 Main memory (total)           & 123.3\,GB \\
 \bottomrule
 \end{tabular}
-\caption{Architectural characteristics of boada-18 (Intel Xeon Silver 4314), from \texttt{lscpu} and \texttt{numactl}.}
+\caption{Architecture of boada-18, from \texttt{lscpu} and \texttt{numactl}.}
 \label{tab:arch}
 \end{table}
 
@@ -96,7 +96,7 @@ The local-to-remote ratio is $10:20 = $ \textbf{1:2}: accessing memory on the ot
 \subsection{Architectural diagram (Question 2)}
 % --------------------------------------------------
 
-Figure~\ref{fig:topo} shows the topology of boada-18 generated with \texttt{lstopo}: two packages (sockets), each forming one NUMA node with its own memory, 16 cores per package with private L1 and L2 caches, a 24\,MB L3 shared by the 16 cores of the package, and two hardware threads (PUs) per core.
+% Figure~\ref{fig:topo} shows the topology of boada-18 generated with \texttt{lstopo}: two packages (sockets), each forming one NUMA node with its own memory, 16 cores per package with private L1 and L2 caches, a 24\,MB L3 shared by the 16 cores of the package, and two hardware threads (PUs) per core.
 
 \begin{figure}[H]
 \centering
@@ -115,15 +115,15 @@ Figure~\ref{fig:topo} shows the topology of boada-18 generated with \texttt{lsto
 \subsection{OpenMP scaling (Question 3)}
 % --------------------------------------------------
 
-{\bfseries Strong scaling} keeps the problem size fixed ($10^9$ iterations) and increases the number of threads, so parallelism is used to reduce the execution time. The ideal speedup with $p$ threads is $p$. Figure~\ref{fig:omp-strong} shows that the time drops from $1.47$\,s with 1 thread to $0.047$\,s with 32 threads, a speedup of $30.99$ (efficiency $0.97$). The measured speedup tracks the ideal line almost perfectly up to 32 threads.
+{\bfseries Strong scaling} keeps the problem size fixed ($10^9$ iterations) and increases the number of threads, so parallelism is used to reduce the execution time. The ideal speedup with $p$ threads is $p$. Figure shows that the time drops from $1.47$\,s with 1 thread to $0.047$\,s with 32 threads, a speedup of $30.99$ (efficiency $0.97$).
 
-{\bfseries Weak scaling} grows the problem size proportionally with the number of threads ($10^8$ iterations per thread), so parallelism is used to solve a larger problem in the same time. The ideal is a constant execution time, i.e.\ an efficiency of 1. Figure~\ref{fig:omp-weak} shows the efficiency stays between $0.99$ and $1.00$ for all thread counts from 1 to 32.
+{\bfseries Weak scaling} grows the problem size proportionally with the number of threads ($10^9$ iterations per thread), so parallelism is used to solve a larger problem in the same time. The ideal is a constant execution time (an efficiency of 1). Figure shows the efficiency stays between $0.99$ and $1.00$ for all thread counts from 1 to 32.
 
-The scalability is excellent in both scenarios because the iterations are independent, the only shared result is the reduction of \texttt{sum}, and the cyclic distribution gives every thread the same amount of work. The computation runs in registers, so there is no memory traffic or synchronization to limit it. The overhead of OpenMP itself is negligible: with 1 thread \texttt{pi\_omp} takes $1.4721$\,s against $1.4704$\,s for \texttt{pi\_seq} (speedup $0.999$).
+% The scalability is excellent in both scenarios because the iterations are independent, the only shared result is the reduction of \texttt{sum}, and the cyclic distribution gives every thread the same amount of work. The computation runs in registers, so there is no memory traffic or synchronization to limit it. The overhead of OpenMP itself is negligible: with 1 thread \texttt{pi\_omp} takes $1.4721$\,s against $1.4704$\,s for \texttt{pi\_seq} (speedup $0.999$).
 
-{\bfseries Beyond 32 threads} (Figure~\ref{fig:omp-strong64}): boada-18 has 32 physical cores, so threads 33--64 run on the second hardware thread of a core that is already busy. With 33 threads the time jumps from $0.0476$\,s to $0.0906$\,s and the speedup falls from $30.8$ to $16.2$. Every thread receives the same amount of work, but the two threads sharing a core each run at about half speed, and the parallel region ends only when the slowest thread finishes. As more threads are added, each thread's share of work shrinks, so the time decreases again, but with 64 threads (two per core) it is $0.0483$\,s, no better than the $0.0476$\,s obtained with 32 threads.
+{\bfseries Beyond 32 threads}: boada-18 has 32 physical cores, so threads 33--64 run on the second hardware thread of a core that is already busy. With 33 threads the time jumps from $0.0476$\,s to $0.0906$\,s and the speedup falls from $30.8$ to $16.2$. The two threads sharing a core each run at about half speed, and the parallel region ends only when the slowest thread finishes. As more threads are added, each thread's share of work shrinks, so the time decreases again, but with 64 threads (two per core) it is $0.0483$\,s, no better than the $0.0476$\,s obtained with 32 threads.
 
-The reason Hyper-Threading gives no gain is that \texttt{pi\_omp} is a \textbf{CPU-bound} application, not a memory-bound one. Hyper-Threading helps when a thread leaves the core idle while waiting for memory; here one thread already keeps the core's floating-point units busy, so a second thread on the same core only competes for the same resources.
+The reason \textbf{Hyper-Threading} gives no gain is that \texttt{pi\_omp} is a \textbf{CPU-bound} application, not a memory-bound one. Hyper-Threading helps when a thread leaves the core idle while waiting for memory.
 
 \newpage
 \begin{figure}[H]
@@ -155,13 +155,9 @@ The reason Hyper-Threading gives no gain is that \texttt{pi\_omp} is a \textbf{C
 
 \subsubsection{MPI strong scaling (1--32 processes)}
 
-Figure~\ref{fig:mpi-strong} shows the execution time and speedup of the Monte Carlo code with 1 to 32 MPI processes. The execution scales well up to 16 processes and less well from 16 to 32.
+Figure shows the execution time and speedup of the Monte Carlo code with 1 to 32 MPI processes. The execution scales well up to 16 processes and less well from 16 to 32. With 1 process the speedup is $0.937$: the MPI program takes $11.79$\,s against $11.05$\,s for \texttt{pi\_seq}, a $6.7\%$ overhead. For OpenMP, the single-thread overhead was only $0.1\%$ (speedup $0.999$). MPI therefore introduces considerably more overhead than OpenMP, because it has to start processes and set up the communication layer, while OpenMP only creates threads inside one process.
 
-With 1 process the speedup is $0.937$: the MPI program takes $11.79$\,s against $11.05$\,s for \texttt{pi\_seq}, a $6.7\%$ overhead. For OpenMP, the single-thread overhead was only $0.1\%$ (speedup $0.999$). MPI therefore introduces considerably more overhead than OpenMP, because it has to start processes and set up the communication layer, while OpenMP only creates threads inside one process.
-
-Up to 16 processes the scaling is almost linear: 16 processes take $0.752$\,s, a speedup of $14.69$ over \texttt{pi\_seq} and an efficiency of $0.98$ relative to the 1-process MPI run. After that the curve bends. The time barely changes from 16 to 18 processes ($0.752$, $0.741$, $0.758$\,s), and from 16 to 32 processes it improves only by a factor of $1.73$ instead of 2. With 32 processes the time is $0.435$\,s, a speedup of $25.40$ and an efficiency of $0.79$.
-
-This is explained by the allocation in \texttt{submit-strong-mpi.sh}: \texttt{--ntasks=1 --cpus-per-task=32} reserves 32 logical CPUs, which with 2 threads per core are 16 physical cores. Up to 16 processes each gets its own core. From the 17th process on, processes share cores through Hyper-Threading. At 17 and 18 processes only one or two cores are shared, and their processes become the slowest and set the total time. From 19 to 32 processes the sharing spreads over more cores and the time decreases again, but two processes on one core do not run as fast as two processes on two cores. Communication is not the bottleneck: the program performs only one \texttt{MPI\_Reduce} of a single value at the end.
+Up to 16 processes the scaling is almost linear (each gets its own core): 16 processes take $0.752$\,s, a speedup of $14.69$ over \texttt{pi\_seq} and an efficiency of $0.98$ relative to the 1-process MPI run. After that, from 16 to 32 processes, it improves only by a factor of $1.73$ instead of 2. With 32 processes the time is $0.435$\,s, a speedup of $25.40$ and an efficiency of $0.79$. From the 17th process on, processes share cores through Hyper-Threading, the sharing spreads over more cores and the time decreases again, but two processes on one core do not run as fast as two processes on two cores. Communication is not the bottleneck: the program performs only one \texttt{MPI\_Reduce} of a single value at the end.
 
 \newpage
 
