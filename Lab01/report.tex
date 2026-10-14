@@ -18,14 +18,16 @@
 
 \title{Laboratory Assignment 1: Parallel Programming with MPI \\ A Distributed Data Structure}
 \author{
+  Alessandro Fazio \\
+  alessandro.fazio@estudiantat.upc.edu \\
   Jose Ricardo Arias Perez \\
   jose.ricardo.arias@estudiantat.upc.edu \\\\
-  Group: cpds1118 \\
+  Group: cpds11 \\
   Course 2026/27, Q1 \\\\
   Concurrency, Parallelism and Distributed Systems (CPDS) \\
   FIB -- Universitat Polit\`ecnica de Catalunya
 }
-\date{October 10th, 2026}
+\date{October 14th, 2026}
 
 \begin{document}
 \maketitle
@@ -36,52 +38,57 @@
 \section{A distributed data structure (Section 1.1)}
 % ================================================================
 
-All three programs (\texttt{par\_data\_struct}, \texttt{par\_data\_struct\_nonblocking} and \texttt{par\_data\_struct\_sendreceive}) print \texttt{No errors} when run with 4 processes.
+The $12 \times 12$ matrix is split into 4 strips of 3 consecutive rows, one per process. Each process stores its strip in rows \texttt{1..maxn/size} of \texttt{xlocal}. Rows \texttt{0} and \texttt{maxn/size+1} are ghost rows that hold copies of the neighbours' edge rows. Each message carries exactly one row: \texttt{maxn} elements of type \texttt{MPI\_DOUBLE}. All three programs below perform the same exchange and print \texttt{No errors} when run with 4 processes.
 
 \subsection*{Question 1: statements S1--S12}
 
+\subsubsection*{\texttt{par\_data\_struct.c} (blocking \texttt{MPI\_Send}/\texttt{MPI\_Recv})}
 \begin{lstlisting}
-S1:  MPI_Comm_rank( MPI_COMM_WORLD, &rank );
-S2:  MPI_Comm_size( MPI_COMM_WORLD, &size );
-S3:  MPI_Recv( xlocal[0], maxn, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD,
-               &status );
-S4:  MPI_Send( xlocal[1], maxn, MPI_DOUBLE, rank - 1, 1, MPI_COMM_WORLD );
-S5:  MPI_Recv( xlocal[maxn/size+1], maxn, MPI_DOUBLE, rank + 1, 1,
-               MPI_COMM_WORLD, &status );
+S1:  MPI_Comm_rank(MPI_COMM_WORLD, &rank );
+S2:  MPI_Comm_size(MPI_COMM_WORLD, &size );
+S3:  MPI_Recv(xlocal[0], maxn, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD, &status);
+S4:  MPI_Send(xlocal[1], maxn, MPI_DOUBLE, rank - 1, 1, MPI_COMM_WORLD);
+S5:  MPI_Recv(xlocal[maxn/size+1], maxn, MPI_DOUBLE, rank + 1, 1, MPI_COMM_WORLD, &status);
 S6:  MPI_Reduce( &errcnt, &toterr, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
-S7:  MPI_Isend( xlocal[maxn/size], maxn, MPI_DOUBLE, rank + 1, 0,
-                MPI_COMM_WORLD, &r[nreq++] );
-S8:  MPI_Irecv( xlocal[0], maxn, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD,
-                &r[nreq++] );
-S9:  MPI_Isend( xlocal[1], maxn, MPI_DOUBLE, rank - 1, 1, MPI_COMM_WORLD,
-                &r[nreq++] );
-S10: MPI_Irecv( xlocal[maxn/size+1], maxn, MPI_DOUBLE, rank + 1, 1,
-                MPI_COMM_WORLD, &r[nreq++] );
-S11: MPI_Reduce( &errcnt, &toterr, 1, MPI_INT, MPI_SUM, 0,
-                 MPI_COMM_WORLD );
-S12: MPI_Sendrecv( xlocal[1], maxn, MPI_DOUBLE, prev_nbr, 1,
-                   xlocal[maxn/size+1], maxn, MPI_DOUBLE, next_nbr, 1,
-                   MPI_COMM_WORLD, &status );
 \end{lstlisting}
+A blocking call does not return until its buffer can safely be reused (send) or holds the received data (receive). Process 0 has no previous neighbour and the last process has no next neighbour, so every call is guarded by an \texttt{if} on the rank. These guards keep the boundary processes from addressing ranks that do not exist. Tag 0 marks rows travelling downwards and tag 1 marks rows travelling upwards. Finally, \texttt{MPI\_Reduce} (S6) adds the local error counters into \texttt{toterr} on process 0, which prints the verdict.
+
+\subsubsection*{\texttt{par\_data\_struct\_nonblocking.c} (\texttt{MPI\_Isend}/\texttt{MPI\_Irecv})}
+\begin{lstlisting}
+S7:  MPI_Isend( xlocal[maxn/size], maxn, MPI_DOUBLE, rank + 1, 0, MPI_COMM_WORLD, &r[nreq++] );
+S8:  MPI_Irecv( xlocal[0], maxn, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD, &r[nreq++] );
+S9:  MPI_Isend( xlocal[1], maxn, MPI_DOUBLE, rank - 1, 1, MPI_COMM_WORLD, &r[nreq++] );
+S10: MPI_Irecv( xlocal[maxn/size+1], maxn, MPI_DOUBLE, rank + 1, 1, MPI_COMM_WORLD, &r[nreq++] );
+S11: MPI_Reduce( &errcnt, &toterr, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+\end{lstlisting}
+\texttt{MPI\_Isend} and \texttt{MPI\_Irecv} only start a transfer and return immediately. Each call stores an \texttt{MPI\_Request} handle in \texttt{r[nreq++]}, so \texttt{nreq} ends up counting the requests this process actually posted: 2 for the boundary processes and 4 for the inner ones. The program cannot read the ghost rows, or modify the rows being sent, until the transfers have completed. A single \texttt{MPI\_Waitall(nreq, r, statuses)} waits for all of them before the validation loops. Because no call blocks, the order in which the four operations are posted cannot cause a deadlock.
+
+\subsubsection*{\texttt{par\_data\_struct\_sendreceive.c} (\texttt{MPI\_Sendrecv} + \texttt{MPI\_PROC\_NULL})}
+\begin{lstlisting}
+S12: MPI_Sendrecv( xlocal[1], maxn, MPI_DOUBLE, prev_nbr, 1, xlocal[maxn/size+1], maxn, MPI_DOUBLE, next_nbr, 1, MPI_COMM_WORLD, &status );
+\end{lstlisting}
+Each \texttt{MPI\_Sendrecv} combines one send and one receive in a single call, and MPI performs both without deadlock regardless of the order in which processes execute them. The exchange is organised as two shifts along the linear array. The first call shifts the last local row down to \texttt{next\_nbr}. S12 shifts the first local row up to \texttt{prev\_nbr} and receives the next neighbour's first row into the bottom ghost row.
+
+The boundary processes use \texttt{MPI\_PROC\_NULL} as their missing neighbour, so no \texttt{if} statements are needed. A send to \texttt{MPI\_PROC\_NULL} completes at once without transferring anything. A receive from it completes at once and leaves the buffer untouched, so those ghost rows keep their initial \texttt{-1}.
 
 % ================================================================
 \section{A simple Jacobi iterative method (Section 1.2)}
 % ================================================================
 
-The outputs of \texttt{Jacobi} and \texttt{Jacobi\_nb} (4 processes) are identical to \texttt{Jacobi-out.txt}, and the output of \texttt{Jacobi\_vr} (5 processes, \texttt{maxn}=13) is identical to \texttt{Jacobi\_vr\_p5r13-out.txt}. We checked this with \texttt{diff}, which reported no differences.
+The outputs of \texttt{Jacobi} and \texttt{Jacobi\_nb} (4 processes) are identical to \texttt{Jacobi-out.txt}. The output of \texttt{Jacobi\_vr} (5 processes, \texttt{maxn}=13) is identical to \texttt{Jacobi\_vr\_p5r13-out.txt}. We checked all three with \texttt{diff}, which reported no differences.
 
 \subsection*{Question 1: Why \texttt{MPI\_Allreduce} instead of \texttt{MPI\_Reduce}?}
 
-Each process only computes the part of \texttt{diffnorm} that belongs to its own segment. The loop condition \texttt{gdiffnorm > 1.0e-2 \&\& itcnt < 100} is evaluated by \emph{every} process, so every process needs the global value. \texttt{MPI\_Reduce} leaves the result only on the root (process 0). The other processes would then read an uninitialised \texttt{gdiffnorm}. They could stop at a different iteration than process 0, or never stop, and the neighbour exchanges would deadlock or mismatch. \texttt{MPI\_Allreduce} combines the partial sums and gives the result to all processes, so they all take the same decision.
+Each process only computes the part of \texttt{diffnorm} that belongs to its own segment. The loop condition \texttt{gdiffnorm > 1.0e-2 \&\& itcnt < 100} is evaluated by \emph{every} process, so every process needs the global value. \texttt{MPI\_Reduce} leaves the result only on the root (process 0), and the other processes would read an uninitialised \texttt{gdiffnorm}. They could then stop at a different iteration than process 0, or never stop, and the neighbour exchanges would deadlock or pair up wrongly. \texttt{MPI\_Allreduce} combines the partial sums and delivers the result to all processes, so they all take the same decision in the same iteration.
 
 \subsection*{Question 2: What would be needed with \texttt{MPI\_Reduce}?}
 
-After the \texttt{MPI\_Reduce} to process 0, we would need an \texttt{MPI\_Bcast} of \texttt{gdiffnorm} from process 0 to all processes:
+After the \texttt{MPI\_Reduce} to process 0, an \texttt{MPI\_Bcast} of \texttt{gdiffnorm} from process 0 to all processes would be required:
 \begin{lstlisting}
 MPI_Reduce( &diffnorm, &gdiffnorm, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
 MPI_Bcast ( &gdiffnorm, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
 \end{lstlisting}
-\texttt{MPI\_Allreduce} does the same thing in one call.
+\texttt{MPI\_Allreduce} does both steps in one call.
 
 \subsection*{Question 3: Which code defines the halo?}
 
@@ -95,10 +102,10 @@ i_last  = maxn/size;          /* nrows in Jacobi_vr.c */
 if (rank == 0)        i_first++;
 if (rank == size - 1) i_last--;
 \end{lstlisting}
-  On process 0, local row 1 (global row 0) is skipped. On the last process, its last local row (global row \texttt{maxn-1}) is skipped. These rows are set to \texttt{-1} by the initialisation \texttt{xlocal[i\_first-1][j] = -1; xlocal[i\_last+1][j] = -1;}. They are only read as neighbours.
+  Process 0 skips its local row 1 (global row 0), and the last process skips its last local row (global row \texttt{maxn-1}). These rows are set to \texttt{-1} by \texttt{xlocal[i\_first-1][j] = -1; xlocal[i\_last+1][j] = -1;} and are only read as neighbours.
   \item The copy-back loop \texttt{xlocal[i][j] = xnew[i][j]} uses the same bounds, so it does not overwrite the halo either.
 \end{itemize}
-For the inner processes, \texttt{xlocal[0]} and \texttt{xlocal[i\_last+1]} are ghost rows. They are filled by communication and are also only read.
+For the inner processes, \texttt{xlocal[0]} and \texttt{xlocal[i\_last+1]} are ghost rows. They are refreshed by communication in every iteration and are also only read. On the boundary processes, the corresponding communication uses \texttt{MPI\_PROC\_NULL} (S13), so the halo rows are never overwritten.
 
 \subsection*{Question 4: Load balancing when \texttt{maxn} is not divisible by \texttt{P}}
 
@@ -106,12 +113,13 @@ Each process calls \texttt{getRowCount(maxn, rank, size)}:
 \begin{lstlisting}
 return (rowsTotal / mpiSize) + (rowsTotal % mpiSize > mpiRank);
 \end{lstlisting}
-Every process gets the base share of $\lfloor \texttt{maxn}/P \rfloor$ rows. The remainder $r = \texttt{maxn} \bmod P$ is always smaller than $P$. These $r$ leftover rows go one each to the processes with rank $< r$. As a result, the row counts of any two processes differ by at most one, which is the best possible balance with whole rows.
+Every process gets the base share of $\lfloor \texttt{maxn}/P \rfloor$ rows. The remainder $r = \texttt{maxn} \bmod P$ is always smaller than $P$. The comparison evaluates to 1 for the processes with rank $< r$ and to 0 for the rest, so the $r$ leftover rows go one each to the first $r$ processes. As a result, the row counts of any two processes differ by at most one, which is the best possible balance with whole rows.
 
-For \texttt{maxn}=13 and $P$=5: $13/5 = 2$ and $13 \bmod 5 = 3$, so processes 0, 1, 2 get 3 rows and processes 3, 4 get 2 rows. Then \texttt{recvcnts} = \{39, 39, 39, 26, 26\} (\texttt{nrows*maxn}) and \texttt{displs} = \{0, 39, 78, 117, 143\} (prefix sums). \texttt{MPI\_Gatherv} uses these to put each segment at the correct position in \texttt{x}.
+For \texttt{maxn}=13 and $P$=5: $13/5 = 2$ and $13 \bmod 5 = 3$, so processes 0, 1 and 2 get 3 rows and processes 3 and 4 get 2 rows. The receive counts are \texttt{recvcnts} = \{39, 39, 39, 26, 26\} (\texttt{nrows*maxn}), and the displacements are their prefix sums, \texttt{displs} = \{0, 39, 78, 117, 143\}. \texttt{MPI\_Gatherv} uses these to place each segment at the correct position in \texttt{x}.
 
 \subsection*{Question 5: statements S13--S24}
 
+\subsubsection*{\texttt{Jacobi.c}}
 \begin{lstlisting}
 S13: if (next_nbr >= size) next_nbr = MPI_PROC_NULL;
 S14: MPI_Allreduce( &diffnorm, &gdiffnorm, 1, MPI_DOUBLE, MPI_SUM,
@@ -119,14 +127,30 @@ S14: MPI_Allreduce( &diffnorm, &gdiffnorm, 1, MPI_DOUBLE, MPI_SUM,
 S15: MPI_Gather( xlocal[1], maxn * (maxn/size), MPI_DOUBLE,
                  x, maxn * (maxn/size), MPI_DOUBLE,
                  0, MPI_COMM_WORLD );
-S16: MPI_Wait( &r[2], &status );   /* status must be passed by address */
-S17: MPI_Waitall( nreq, r, statuses );   /* waits for r[0] and r[1] */
-S18: MPI_Wait( &r[3], &status );   /* Isend of xlocal[1] */
+\end{lstlisting}
+This program reuses the exchange from Section 1.1 inside the Jacobi loop. \texttt{MPI\_PROC\_NULL} (S13) removes the boundary special cases without any branching and leaves the halo rows of the first and last process untouched. \texttt{MPI\_Allreduce} (S14) provides the global convergence value to every process (see Question 1). After convergence, \texttt{MPI\_Gather} (S15) collects the \texttt{maxn*(maxn/size)} values owned by each process. Each contribution starts at \texttt{xlocal[1]} and excludes the ghost rows. Process 0 receives the contributions in rank order, contiguously in \texttt{x}, and prints the full solution.
+
+\subsubsection*{\texttt{Jacobi\_nb.c}}
+\begin{lstlisting}
+S16: MPI_Wait( &r[2], &status );   /* fix: status passed by address */
+S17: MPI_Waitall( nreq, r, statuses );   /* r[0] and r[1] */
+S18: MPI_Wait( &r[3], &status );
 S19: MPI_Iallreduce( &diffnorm, &gdiffnorm, 1, MPI_DOUBLE, MPI_SUM,
                      MPI_COMM_WORLD, &r[0] );
 S20: MPI_Igather( xlocal[1], maxn * (maxn/size), MPI_DOUBLE,
                   x, maxn * (maxn/size), MPI_DOUBLE,
                   0, MPI_COMM_WORLD, &r[0] );
+\end{lstlisting}
+This version hides part of the communication latency. It posts the four non-blocking transfers and then computes rows \texttt{i\_first..i\_last-1}, which do not need the lower ghost row, while that row is still in transit. The program waits only where the data is actually needed:
+\begin{itemize}
+  \item \textbf{S16} waits on \texttt{r[2]} so that the upper ghost row \texttt{xlocal[0]} has arrived before the first local row is computed. The original statement passed \texttt{status} instead of \texttt{\&status}, which was the error.
+  \item \textbf{S17} waits on \texttt{r[0]} (send of the last local row) and \texttt{r[1]} (receive of the lower ghost row) before computing the last row \texttt{i\_last}. That row needs \texttt{xlocal[i\_last+1]}, and the sent row must not change while it is in flight. Since \texttt{nreq}=2, \texttt{MPI\_Waitall} completes exactly the first two entries of \texttt{r}.
+  \item \textbf{S18} waits on \texttt{r[3]} so that the old \texttt{xlocal[1]} has been sent to the previous neighbour before it is overwritten with the new values.
+\end{itemize}
+S19 and S20 use the non-blocking collectives \texttt{MPI\_Iallreduce} and \texttt{MPI\_Igather}. They use \texttt{r[0]} because the code waits on \texttt{MPI\_Wait(\&r[0], \&status)} right after each call, and \texttt{r[0]} is free since S17 has already completed it. Because the wait comes immediately after each call, with no independent work in between, these collectives give no real overlap here. They behave like their blocking versions and only illustrate the syntax.
+
+\subsubsection*{\texttt{Jacobi\_vr.c}}
+\begin{lstlisting}
 S21: return (rowsTotal / mpiSize) + (rowsTotal % mpiSize > mpiRank);
 S22: nrows = getRowCount(maxn, rank, size);
 S23: MPI_Gather( &lcnt, 1, MPI_INT, recvcnts, 1, MPI_INT, 0,
@@ -135,7 +159,10 @@ S24: MPI_Gatherv( xlocal[1], lcnt, MPI_DOUBLE,
                   x, recvcnts, displs, MPI_DOUBLE,
                   0, MPI_COMM_WORLD );
 \end{lstlisting}
-
-In S19 and S20 we use \texttt{r[0]} because the code after each call waits on \texttt{MPI\_Wait(\&r[0], \&status)}. At that point \texttt{r[0]} is free to reuse, since S17 has already completed it.
+S21 and S22 distribute the rows as explained in Question 4. Each process now owns a different number of rows, so a plain \texttt{MPI\_Gather}, which receives the same count from every process, cannot rebuild \texttt{x}. Collection therefore takes two steps:
+\begin{enumerate}
+  \item \textbf{S23:} every process sends its element count \texttt{lcnt = maxn*nrows} to process 0, which fills \texttt{recvcnts} and computes \texttt{displs} as prefix sums.
+  \item \textbf{S24:} \texttt{MPI\_Gatherv} sends \texttt{lcnt} values from each process, starting at \texttt{xlocal[1]}. Process 0 stores the $i$-th contribution of \texttt{recvcnts[i]} values at offset \texttt{displs[i]} in \texttt{x}.
+\end{enumerate}
 
 \end{document}
