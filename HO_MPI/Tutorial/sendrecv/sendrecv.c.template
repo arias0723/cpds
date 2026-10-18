@@ -1,0 +1,48 @@
+#include <stdio.h>
+#include <string.h>
+#include "mpi.h"
+
+int main(int argc, char ** argv) 
+{
+  int rank, ntag = 100;
+  char message[14];
+  MPI_Status status;
+
+  /*----------------*/
+  /* Initialize MPI */
+  /*----------------*/
+
+  XXXXXXXX(&argc, &argv);
+
+  /*------------------------------------------------------*/
+  /* Get my rank in the MPI_COMM_WORLD communicator group */
+  /*------------------------------------------------------*/
+
+  XXXXXXXXXXXXX(MPI_COMM_WORLD, &rank);
+
+  /*---------------------------------------*/
+  /* Process 0 sends a message to process 1*/
+  /*---------------------------------------*/
+	
+  if (rank == 0) {
+    strcpy(message, "Hello,World!");
+    XXXXXXXX(&message, 14, XXXXXXXX, X, XXXX, MPI_COMM_WORLD);
+  }
+
+  /*--------------------------------------------*/
+  /* Process 1 receives a message from process 0*/
+  /* and outputs the result                     */
+  /*--------------------------------------------*/
+
+  if (rank == 1 ) {
+    XXXXXXXX(&message, 14, XXXXXXXX, X, ntag, MPI_COMM_WORLD, XXXXXXX);
+    printf("Process %d : %s\n", rank, message);
+  }
+
+  /*--------------*/
+  /* Finalize MPI */
+  /*--------------*/
+
+  XXXXXXXXXXXX();
+
+}

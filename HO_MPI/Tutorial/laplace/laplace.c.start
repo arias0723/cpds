@@ -1,0 +1,17 @@
+#define NPES     4
+#define NC       1000                   /* Number of Cols        */
+#define NR       1000                   /* Number of Rows        */
+#define NRL      NR/NPES                /* Number of Rows per PE */
+#define NITER    1000                   /* Max num of Iterations */
+#define DOWN     100                    /* Tag for messages down */
+#define UP       101                    /* Tag for messages up   */
+#define ROOT     0                      /* The root PE           */
+#define MAX(x,y) ( ((x) > (y)) ? x : y )
+
+#include <stdio.h>
+#include <math.h>
+#include <mpi.h>                        /* Required MPI library */
+
+int main( int argc, char **argv ){
+  
+}    /* End of Program */

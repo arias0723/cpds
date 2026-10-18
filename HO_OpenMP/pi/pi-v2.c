@@ -40,8 +40,17 @@ double x, sum=0.0, pi=0.0;
 #if _DEBUG_
     	int id = omp_get_thread_num();
 #endif
+        /*
+         * BUG: Without an omp for directive, every thread executes the
+         * complete loop instead of receiving a distinct subset of iterations.
+         */
         for (i=0; i < num_steps; ++i) {
             x = (i+0.5)*step;
+            /*
+             * BUG: sum is shared by all threads and this read-modify-write
+             * operation is not synchronized, so updates can be lost and the
+             * computed value of pi is nondeterministic.
+             */
             sum += 4.0/(1.0+x*x);
 #if _DEBUG_
             printf("thread id:%d it:%d\n",id,i);

@@ -1,0 +1,12 @@
+#include "mpi.h"
+#include <stdio.h>
+
+#define	ARRAYSIZE	60000
+#define MASTER		0         /* taskid of first process */
+
+int main(argc,argv)
+int argc;
+char *argv[];
+{
+
+}
