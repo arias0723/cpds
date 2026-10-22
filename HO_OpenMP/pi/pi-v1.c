@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
         int id = omp_get_thread_num();
 #endif
         /*
-         * This loop is currently executed by every thread because it is not
+         * BUG: This loop is currently executed by every thread because it is not
          * accompanied by an omp for directive. The shared loop state and sum
          * also cause data races in the parallel region.
          */

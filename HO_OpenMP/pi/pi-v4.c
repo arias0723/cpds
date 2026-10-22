@@ -47,6 +47,11 @@ int main(int argc, char *argv[])
         {
             x = (i + 0.5) * step;
 #pragma omp critical
+            /*
+             * Correctness fix: critical prevents concurrent updates to the
+             * shared sum from being lost. However, it serializes every
+             * accumulation and can become a performance bottleneck.
+             */
             sum += 4.0 / (1.0 + x * x);
 #if _DEBUG_
             printf("thread id:%d it:%d\n", id, i);
