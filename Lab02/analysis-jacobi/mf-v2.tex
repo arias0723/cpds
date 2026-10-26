@@ -1,0 +1,59 @@
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\multicolumn{5}{|c|}{Overview of whole program execution metrics} \\
+\hline
+\hline
+Number of processors & 1 & 4 & 8 & 16 \\
+\hline
+Elapsed time (sec)      &       2.36 &       0.65 &       0.37 &       0.20 \\
+\hline
+Speedup                 &       1.00 &       3.63 &       6.30 &      11.78 \\
+\hline
+Efficiency              &       1.00 &       0.91 &       0.79 &       0.74 \\
+\hline
+\end{tabular}
+\vspace{2mm}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\multicolumn{5}{|c|}{Overview of the Efficiency metrics in parallel fraction, $\phi$=98.74\%} \\
+\hline
+\hline
+Number of processors & 1 & 4 & 8 & 16 \\
+\hline
+\hline
+Global efficiency                      &     99.81\% &     93.75\% &     83.71\% &     83.28\% \\
+\hline
+\hline
+Parallelization strategy efficiency &     99.81\% &     95.36\% &     95.67\% &     93.27\% \\
+\hline
+Load balancing                   &    100.00\% &     96.68\% &     98.68\% &     98.66\% \\
+In execution efficiency          &     99.81\% &     98.63\% &     96.95\% &     94.53\% \\
+\hline
+\hline
+Scalability for computation tasks   &    100.00\% &     98.32\% &     87.50\% &     89.29\% \\
+\hline
+IPC scalability                  &    100.00\% &     98.52\% &     90.25\% &     93.92\% \\
+Instruction scalability          &    100.00\% &     99.96\% &     97.73\% &     96.80\% \\
+Frequency scalability            &    100.00\% &     99.84\% &     99.20\% &     98.21\% \\
+\hline
+\end{tabular}
+\vspace{2mm}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\multicolumn{5}{|c|}{Statistics about implicit or explicit tasks in parallel fraction} \\
+\hline
+\hline
+Number of processors & 1 & 4 & 8 & 16 \\
+\hline
+\hline
+Number of implicit tasks per thread (average us)    &          2000.0 &          2000.0 &          2000.0 &          2000.0 \\
+\hline
+Useful duration for implicit tasks (average us)     &         1163.62 &          295.87 &          166.23 &           81.45 \\
+\hline
+Load balancing for implicit tasks                &             1.0 &            0.97 &            0.99 &            0.99 \\
+\hline
+Time in synchronization implicit tasks (average us) &             0.0 &             0.0 &             0.0 &             0.0 \\
+\hline
+Time in fork/join implicit tasks (average us)       &            2.26 &           21.43 &             8.6 &            7.58 \\
+\hline
+\end{tabular}
