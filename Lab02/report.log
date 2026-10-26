@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Homebrew) (preloaded format=pdflatex 2026.10.9)  26 OCT 2026 16:32
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Homebrew) (preloaded format=pdflatex 2026.10.9)  26 OCT 2026 18:02
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -545,37 +545,38 @@ nc/dvips/cm-super/cm-super-t1.enc}] (./report.toc)
 \openout4 = `report.toc'.
 
 [2]
-<analysis-jacobi/heat-jacobi-seq.png, id=70, 256.96pt x 256.96pt>
+<analysis-jacobi/heat-jacobi-seq.png, id=75, 256.96pt x 256.96pt>
 File: analysis-jacobi/heat-jacobi-seq.png Graphic file (type png)
 <use analysis-jacobi/heat-jacobi-seq.png>
 Package pdftex.def Info: analysis-jacobi/heat-jacobi-seq.png  used on input lin
 e 62.
 (pdftex.def)             Requested size: 182.09486pt x 182.09782pt.
-<analisis-gauss/heat-gauss-seq.png, id=71, 256.96pt x 256.96pt>
-File: analisis-gauss/heat-gauss-seq.png Graphic file (type png)
-<use analisis-gauss/heat-gauss-seq.png>
-Package pdftex.def Info: analisis-gauss/heat-gauss-seq.png  used on input line 
+<analysis-gauss/heat-gauss-seq.png, id=76, 256.96pt x 256.96pt>
+File: analysis-gauss/heat-gauss-seq.png Graphic file (type png)
+<use analysis-gauss/heat-gauss-seq.png>
+Package pdftex.def Info: analysis-gauss/heat-gauss-seq.png  used on input line 
 68.
 (pdftex.def)             Requested size: 182.09486pt x 182.09782pt.
 [3{/opt/homebrew/Cellar/texlive/20260301_1/share/texmf-dist/fonts/enc/dvips/cm-
 super/cm-super-ts1.enc} <./analysis-jacobi/heat-jacobi-seq.png (PNG copy)> <./a
-nalisis-gauss/heat-gauss-seq.png (PNG copy)>]
+nalysis-gauss/heat-gauss-seq.png (PNG copy)>]
 LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10.95> not available
 (Font)              Font shape `T1/cmtt/m/n' tried instead on input line 88.
-<analysis-jacobi/jacobi_dg_coarse.pdf, id=86, 700.6175pt x 4867.18375pt>
+<analysis-jacobi/jacobi_dg_coarse.pdf, id=91, 700.6175pt x 4867.18375pt>
 File: analysis-jacobi/jacobi_dg_coarse.pdf Graphic file (type pdf)
 <use analysis-jacobi/jacobi_dg_coarse.pdf>
 Package pdftex.def Info: analysis-jacobi/jacobi_dg_coarse.pdf  used on input li
 ne 104.
 (pdftex.def)             Requested size: 55.6336pt x 386.53284pt.
 [4]
-<analysis-jacobi/jacobi_dg_blocks_v1.pdf, id=96, 8136.3975pt x 7794.11874pt>
+<analysis-jacobi/jacobi_dg_blocks_v1.pdf, id=101, 8136.3975pt x 7794.11874pt>
 File: analysis-jacobi/jacobi_dg_blocks_v1.pdf Graphic file (type pdf)
 <use analysis-jacobi/jacobi_dg_blocks_v1.pdf>
 Package pdftex.def Info: analysis-jacobi/jacobi_dg_blocks_v1.pdf  used on input
  line 113.
 (pdftex.def)             Requested size: 223.07211pt x 213.59563pt.
-<analysis-jacobi/jacobi_dg_blocks_v2.pdf, id=97, 8844.04124pt x 10363.71875pt>
+<analysis-jacobi/jacobi_dg_blocks_v2.pdf, id=102, 8844.04124pt x 10363.71875pt>
+
 File: analysis-jacobi/jacobi_dg_blocks_v2.pdf Graphic file (type pdf)
 <use analysis-jacobi/jacobi_dg_blocks_v2.pdf>
 Package pdftex.def Info: analysis-jacobi/jacobi_dg_blocks_v2.pdf  used on input
@@ -587,31 +588,31 @@ ocks_v1.pdf> <./analysis-jacobi/jacobi_dg_blocks_v2.pdf
 pdfTeX warning: pdflatex (file ./analysis-jacobi/jacobi_dg_blocks_v2.pdf): PDF 
 inclusion: multiple pdfs with page group included in a single page
 >]
-<analysis-jacobi/jacobi_coarse_16cores.png, id=136, 1419.3025pt x 415.5525pt>
+<analysis-jacobi/jacobi_coarse_16cores.png, id=141, 1419.3025pt x 415.5525pt>
 File: analysis-jacobi/jacobi_coarse_16cores.png Graphic file (type png)
 <use analysis-jacobi/jacobi_coarse_16cores.png>
 Package pdftex.def Info: analysis-jacobi/jacobi_coarse_16cores.png  used on inp
 ut line 157.
 (pdftex.def)             Requested size: 409.71692pt x 119.95547pt.
-<analysis-jacobi/jacobi_blocks01_4cores.png, id=138, 1389.19pt x 473.77pt>
+<analysis-jacobi/jacobi_blocks01_4cores.png, id=143, 1389.19pt x 473.77pt>
 File: analysis-jacobi/jacobi_blocks01_4cores.png Graphic file (type png)
 <use analysis-jacobi/jacobi_blocks01_4cores.png>
 Package pdftex.def Info: analysis-jacobi/jacobi_blocks01_4cores.png  used on in
 put line 166.
 (pdftex.def)             Requested size: 409.71692pt x 139.73201pt.
-<analysis-jacobi/jacobi_blocks01_16cores.png, id=139, 1473.505pt x 511.9125pt>
+<analysis-jacobi/jacobi_blocks01_16cores.png, id=144, 1473.505pt x 511.9125pt>
 File: analysis-jacobi/jacobi_blocks01_16cores.png Graphic file (type png)
 <use analysis-jacobi/jacobi_blocks01_16cores.png>
 Package pdftex.def Info: analysis-jacobi/jacobi_blocks01_16cores.png  used on i
 nput line 173.
 (pdftex.def)             Requested size: 409.71692pt x 142.33469pt.
-<analysis-jacobi/jacobi_blocks02_4cores.png, id=140, 1418.29875pt x 578.16pt>
+<analysis-jacobi/jacobi_blocks02_4cores.png, id=145, 1418.29875pt x 578.16pt>
 File: analysis-jacobi/jacobi_blocks02_4cores.png Graphic file (type png)
 <use analysis-jacobi/jacobi_blocks02_4cores.png>
 Package pdftex.def Info: analysis-jacobi/jacobi_blocks02_4cores.png  used on in
 put line 184.
 (pdftex.def)             Requested size: 409.71692pt x 167.0181pt.
-<analysis-jacobi/jacobi_blocks02_16cores.png, id=141, 1442.38875pt x 604.2575pt
+<analysis-jacobi/jacobi_blocks02_16cores.png, id=146, 1442.38875pt x 604.2575pt
 >
 File: analysis-jacobi/jacobi_blocks02_16cores.png Graphic file (type png)
 <use analysis-jacobi/jacobi_blocks02_16cores.png>
@@ -619,81 +620,144 @@ Package pdftex.def Info: analysis-jacobi/jacobi_blocks02_16cores.png  used on i
 nput line 191.
 (pdftex.def)             Requested size: 409.71692pt x 171.6343pt.
 [7 <./analysis-jacobi/jacobi_coarse_16cores.png> <./analysis-jacobi/jacobi_bloc
-ks01_4cores.png> <./analysis-jacobi/jacobi_blocks01_16cores.png>]
+ks01_4cores.png> <./analysis-jacobi/jacobi_blocks01_16cores.png>] [8 <./analysi
+s-jacobi/jacobi_blocks02_4cores.png> <./analysis-jacobi/jacobi_blocks02_16cores
+.png>]
+<analysis-gauss/gauss_dg_coarse.pdf, id=166, 511.9125pt x 3570.33875pt>
+File: analysis-gauss/gauss_dg_coarse.pdf Graphic file (type pdf)
+<use analysis-gauss/gauss_dg_coarse.pdf>
+Package pdftex.def Info: analysis-gauss/gauss_dg_coarse.pdf  used on input line
+ 225.
+(pdftex.def)             Requested size: 50.38188pt x 351.39154pt.
+<analysis-gauss/gauss_dg_blocks_small.pdf, id=167, 346.29375pt x 1810.765pt>
+File: analysis-gauss/gauss_dg_blocks_small.pdf Graphic file (type pdf)
+<use analysis-gauss/gauss_dg_blocks_small.pdf>
+Package pdftex.def Info: analysis-gauss/gauss_dg_blocks_small.pdf  used on inpu
+t line 231.
+(pdftex.def)             Requested size: 67.19675pt x 351.39154pt.
+<analysis-gauss/gauss_dg_blocks_nobarrier.pdf, id=168, 5532.67pt x 7622.4775pt>
+
+File: analysis-gauss/gauss_dg_blocks_nobarrier.pdf Graphic file (type pdf)
+<use analysis-gauss/gauss_dg_blocks_nobarrier.pdf>
+Package pdftex.def Info: analysis-gauss/gauss_dg_blocks_nobarrier.pdf  used on 
+input line 240.
+(pdftex.def)             Requested size: 318.66948pt x 438.95203pt.
+[9 <./analysis-gauss/gauss_dg_coarse.pdf> <./analysis-gauss/gauss_dg_blocks_sma
+ll.pdf
+
+pdfTeX warning: pdflatex (file ./analysis-gauss/gauss_dg_blocks_small.pdf): PDF
+ inclusion: multiple pdfs with page group included in a single page
+>] [10 <./analysis-gauss/gauss_dg_blocks_nobarrier.pdf>]
+<analysis-gauss/gauss_coarse_16cores.png, id=211, 1273.75874pt x 385.44pt>
+File: analysis-gauss/gauss_coarse_16cores.png Graphic file (type png)
+<use analysis-gauss/gauss_coarse_16cores.png>
+Package pdftex.def Info: analysis-gauss/gauss_coarse_16cores.png  used on input
+ line 276.
+(pdftex.def)             Requested size: 409.71692pt x 123.9785pt.
+<analysis-gauss/gauss_blocks_4cores.png, id=212, 1180.41pt x 429.605pt>
+File: analysis-gauss/gauss_blocks_4cores.png Graphic file (type png)
+<use analysis-gauss/gauss_blocks_4cores.png>
+Package pdftex.def Info: analysis-gauss/gauss_blocks_4cores.png  used on input 
+line 285.
+(pdftex.def)             Requested size: 409.71692pt x 149.11194pt.
+<analysis-gauss/gauss_blocks_16cores.png, id=213, 1238.6275pt x 338.26375pt>
+File: analysis-gauss/gauss_blocks_16cores.png Graphic file (type png)
+<use analysis-gauss/gauss_blocks_16cores.png>
+Package pdftex.def Info: analysis-gauss/gauss_blocks_16cores.png  used on input
+ line 292.
+(pdftex.def)             Requested size: 409.71692pt x 111.89061pt.
+[11 <./analysis-gauss/gauss_coarse_16cores.png>]
+<analysis-gauss/gauss_blocks_nobarrier_4cores.png, id=220, 1254.6875pt x 364.36
+125pt>
+File: analysis-gauss/gauss_blocks_nobarrier_4cores.png Graphic file (type png)
+<use analysis-gauss/gauss_blocks_nobarrier_4cores.png>
+Package pdftex.def Info: analysis-gauss/gauss_blocks_nobarrier_4cores.png  used
+ on input line 303.
+(pdftex.def)             Requested size: 409.71692pt x 118.98308pt.
+<analysis-gauss/gauss_blocks_nobarrier_16cores.png, id=221, 1230.5975pt x 381.4
+25pt>
+File: analysis-gauss/gauss_blocks_nobarrier_16cores.png Graphic file (type png)
+
+<use analysis-gauss/gauss_blocks_nobarrier_16cores.png>
+Package pdftex.def Info: analysis-gauss/gauss_blocks_nobarrier_16cores.png  use
+d on input line 310.
+(pdftex.def)             Requested size: 409.71692pt x 126.98808pt.
+[12 <./analysis-gauss/gauss_blocks_4cores.png> <./analysis-gauss/gauss_blocks_1
+6cores.png> <./analysis-gauss/gauss_blocks_nobarrier_4cores.png> <./analysis-ga
+uss/gauss_blocks_nobarrier_16cores.png>]
 LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 218.
-[8 <./analysis-jacobi/jacobi_blocks02_4cores.png> <./analysis-jacobi/jacobi_blo
-cks02_16cores.png>] (./analysis-jacobi/mf-v1.tex) [9] (./analysis-jacobi/mf-v0.
-tex) [10]
-<analysis-jacobi/heat-omp-16-boada-18-cutter-v1.png, id=204, 1173.38374pt x 731
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 325.
+[13] (./analysis-jacobi/mf-v1.tex) [14] (./analysis-jacobi/mf-v0.tex)
+<analysis-jacobi/heat-omp-16-boada-18-cutter-v1.png, id=275, 1173.38374pt x 731
 .73375pt>
 File: analysis-jacobi/heat-omp-16-boada-18-cutter-v1.png Graphic file (type png
 )
 <use analysis-jacobi/heat-omp-16-boada-18-cutter-v1.png>
 Package pdftex.def Info: analysis-jacobi/heat-omp-16-boada-18-cutter-v1.png  us
-ed on input line 299.
+ed on input line 406.
 (pdftex.def)             Requested size: 455.24411pt x 283.89001pt.
-[11] [12 <./analysis-jacobi/heat-omp-16-boada-18-cutter-v1.png>] (./analysis-ja
+[15] [16 <./analysis-jacobi/heat-omp-16-boada-18-cutter-v1.png>] (./analysis-ja
 cobi/mf-v2.tex)
-<analysis-jacobi/strong-heat-omp-jacobi-1-32-3-boada-18-v2.pdf, id=226, 614.295
+<analysis-jacobi/strong-heat-omp-jacobi-1-32-3-boada-18-v2.pdf, id=300, 614.295
 pt x 794.97pt>
 File: analysis-jacobi/strong-heat-omp-jacobi-1-32-3-boada-18-v2.pdf Graphic fil
 e (type pdf)
 <use analysis-jacobi/strong-heat-omp-jacobi-1-32-3-boada-18-v2.pdf>
 Package pdftex.def Info: analysis-jacobi/strong-heat-omp-jacobi-1-32-3-boada-18
--v2.pdf  used on input line 347.
+-v2.pdf  used on input line 454.
 (pdftex.def)             Requested size: 250.38564pt x 274.92868pt.
-[13] [14 <./analysis-jacobi/strong-heat-omp-jacobi-1-32-3-boada-18-v2.pdf>]
-<analysis-jacobi/heat-omp-16-boada-18-cutter-v2.png, id=251, 1322.9425pt x 844.
+[17] [18 <./analysis-jacobi/strong-heat-omp-jacobi-1-32-3-boada-18-v2.pdf>]
+<analysis-jacobi/heat-omp-16-boada-18-cutter-v2.png, id=324, 1322.9425pt x 844.
 15375pt>
 File: analysis-jacobi/heat-omp-16-boada-18-cutter-v2.png Graphic file (type png
 )
 <use analysis-jacobi/heat-omp-16-boada-18-cutter-v2.png>
 Package pdftex.def Info: analysis-jacobi/heat-omp-16-boada-18-cutter-v2.png  us
-ed on input line 382.
+ed on input line 489.
 (pdftex.def)             Requested size: 455.24411pt x 290.47339pt.
-[15 <./analysis-jacobi/heat-omp-16-boada-18-cutter-v2.png>] (./report.aux)
+[19 <./analysis-jacobi/heat-omp-16-boada-18-cutter-v2.png>] (./report.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
 Package rerunfilecheck Info: File `report.out' has not changed.
-(rerunfilecheck)             Checksum: 8C784E858E92F798FE4DBFC5D4A5A955;1880.
+(rerunfilecheck)             Checksum: E7342AEC46DA9C2F1E3C43D594AE3198;1998.
  ) 
 Here is how much of TeX's memory you used:
- 13885 strings out of 467525
- 220344 string characters out of 5407385
- 1083076 words of memory out of 5000000
- 42543 multiletter control sequences out of 15000+600000
+ 13977 strings out of 467525
+ 223931 string characters out of 5407385
+ 1101076 words of memory out of 5000000
+ 42622 multiletter control sequences out of 15000+600000
  641179 words of font info for 72 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,9n,79p,869b,1997s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,9n,79p,913b,1997s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </opt/homebrew/Cellar/texlive/20260301_1/share/texmf-dist/fonts/type1/public/
 amsfonts/cm/cmmi10.pfb></opt/homebrew/Cellar/texlive/20260301_1/share/texmf-dis
-t/fonts/type1/public/amsfonts/cm/cmr10.pfb></opt/homebrew/Cellar/texlive/202603
-01_1/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></opt/homebrew/Ce
-llar/texlive/20260301_1/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.
-pfb></opt/homebrew/Cellar/texlive/20260301_1/share/texmf-dist/fonts/type1/publi
-c/cm-super/sfbx1095.pfb></opt/homebrew/Cellar/texlive/20260301_1/share/texmf-di
-st/fonts/type1/public/cm-super/sfbx1200.pfb></opt/homebrew/Cellar/texlive/20260
-301_1/share/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></opt/homebrew/
-Cellar/texlive/20260301_1/share/texmf-dist/fonts/type1/public/cm-super/sfit1000
+t/fonts/type1/public/amsfonts/cm/cmmi8.pfb></opt/homebrew/Cellar/texlive/202603
+01_1/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></opt/homebrew/C
+ellar/texlive/20260301_1/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.p
+fb></opt/homebrew/Cellar/texlive/20260301_1/share/texmf-dist/fonts/type1/public
+/amsfonts/cm/cmsy10.pfb></opt/homebrew/Cellar/texlive/20260301_1/share/texmf-di
+st/fonts/type1/public/cm-super/sfbx1095.pfb></opt/homebrew/Cellar/texlive/20260
+301_1/share/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></opt/homebrew/
+Cellar/texlive/20260301_1/share/texmf-dist/fonts/type1/public/cm-super/sfbx1440
 .pfb></opt/homebrew/Cellar/texlive/20260301_1/share/texmf-dist/fonts/type1/publ
-ic/cm-super/sfit1095.pfb></opt/homebrew/Cellar/texlive/20260301_1/share/texmf-d
-ist/fonts/type1/public/cm-super/sfrm1000.pfb></opt/homebrew/Cellar/texlive/2026
-0301_1/share/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb></opt/homebrew
-/Cellar/texlive/20260301_1/share/texmf-dist/fonts/type1/public/cm-super/sfrm120
-0.pfb></opt/homebrew/Cellar/texlive/20260301_1/share/texmf-dist/fonts/type1/pub
-lic/cm-super/sfrm1728.pfb></opt/homebrew/Cellar/texlive/20260301_1/share/texmf-
-dist/fonts/type1/public/cm-super/sfti1095.pfb></opt/homebrew/Cellar/texlive/202
-60301_1/share/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb></opt/homebre
+ic/cm-super/sfit1000.pfb></opt/homebrew/Cellar/texlive/20260301_1/share/texmf-d
+ist/fonts/type1/public/cm-super/sfit1095.pfb></opt/homebrew/Cellar/texlive/2026
+0301_1/share/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb></opt/homebrew
+/Cellar/texlive/20260301_1/share/texmf-dist/fonts/type1/public/cm-super/sfrm109
+5.pfb></opt/homebrew/Cellar/texlive/20260301_1/share/texmf-dist/fonts/type1/pub
+lic/cm-super/sfrm1200.pfb></opt/homebrew/Cellar/texlive/20260301_1/share/texmf-
+dist/fonts/type1/public/cm-super/sfrm1728.pfb></opt/homebrew/Cellar/texlive/202
+60301_1/share/texmf-dist/fonts/type1/public/cm-super/sfti1095.pfb></opt/homebre
 w/Cellar/texlive/20260301_1/share/texmf-dist/fonts/type1/public/cm-super/sftt10
-95.pfb></opt/homebrew/Cellar/texlive/20260301_1/share/texmf-dist/fonts/type1/ur
-w/times/utmr8a.pfb>
-Output written on report.pdf (15 pages, 938623 bytes).
+00.pfb></opt/homebrew/Cellar/texlive/20260301_1/share/texmf-dist/fonts/type1/pu
+blic/cm-super/sftt1095.pfb></opt/homebrew/Cellar/texlive/20260301_1/share/texmf
+-dist/fonts/type1/urw/times/utmr8a.pfb>
+Output written on report.pdf (19 pages, 1193593 bytes).
 PDF statistics:
- 357 PDF objects out of 1000 (max. 8388607)
- 277 compressed objects within 3 object streams
- 91 named destinations out of 1000 (max. 500000)
- 152 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 437 PDF objects out of 1000 (max. 8388607)
+ 333 compressed objects within 4 object streams
+ 104 named destinations out of 1000 (max. 500000)
+ 200 words of extra memory for PDF output out of 10000 (max. 10000000)
 

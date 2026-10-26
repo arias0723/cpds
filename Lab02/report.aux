@@ -23,27 +23,42 @@
 \@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces J3: both phases are parallel. The bright blocks are \texttt  {solve} and the dark blocks are \texttt  {copy}.}}{8}{figure.caption.10}\protected@file@percent }
 \newlabel{fig:sim-blocks2}{{6}{8}{J3: both phases are parallel. The bright blocks are \texttt {solve} and the dark blocks are \texttt {copy}}{figure.caption.10}{}}
 \@writefile{toc}{\contentsline {paragraph}{Conclusions for the OpenMP implementation.}{8}{section*.11}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3}Parallel Jacobi}{8}{section.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Data decomposition implementation}{8}{subsection.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.1}Overall analysis}{10}{subsubsection.3.1.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces \texttt  {modelfactors} for v1 (parallel \texttt  {solve}, sequential \texttt  {copy\_mat}).}}{10}{table.caption.12}\protected@file@percent }
-\newlabel{tab:mf-v1}{{2}{10}{\texttt {modelfactors} for v1 (parallel \texttt {solve}, sequential \texttt {copy\_mat})}{table.caption.12}{}}
-\@writefile{toc}{\contentsline {paragraph}{The unmodified template (v0).}{10}{section*.13}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces \texttt  {modelfactors} for v0, the unmodified template (incorrect code, shown only for comparison).}}{11}{table.caption.14}\protected@file@percent }
-\newlabel{tab:mf-v0}{{3}{11}{\texttt {modelfactors} for v0, the unmodified template (incorrect code, shown only for comparison)}{table.caption.14}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.2}Detailed analysis}{11}{subsubsection.3.1.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces v1, 16 threads. Narrow pulses: parallel \texttt  {solve} (all 16 threads). Wide gaps: sequential \texttt  {copy\_mat}, with instantaneous parallelism equal to 1.}}{12}{figure.caption.15}\protected@file@percent }
-\newlabel{fig:paraver-v1}{{7}{12}{v1, 16 threads. Narrow pulses: parallel \texttt {solve} (all 16 threads). Wide gaps: sequential \texttt {copy\_mat}, with instantaneous parallelism equal to 1}{figure.caption.15}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Optimisation}{12}{subsection.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.1}Overall analysis of the optimised code}{13}{subsubsection.3.2.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces \texttt  {modelfactors} for v2 (parallel \texttt  {solve} and \texttt  {copy\_mat}).}}{13}{table.caption.16}\protected@file@percent }
-\newlabel{tab:mf-v2}{{4}{13}{\texttt {modelfactors} for v2 (parallel \texttt {solve} and \texttt {copy\_mat})}{table.caption.16}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Strong scalability of v2 (\texttt  {submit-strong-omp.sh}, Jacobi, 1 to 32 threads).}}{14}{figure.caption.17}\protected@file@percent }
-\newlabel{fig:strong-v2}{{8}{14}{Strong scalability of v2 (\texttt {submit-strong-omp.sh}, Jacobi, 1 to 32 threads)}{figure.caption.17}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Comparison of the first implementation (v1) and the optimised one (v2).}}{14}{table.caption.18}\protected@file@percent }
-\newlabel{tab:v1v2}{{5}{14}{Comparison of the first implementation (v1) and the optimised one (v2)}{table.caption.18}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.2}Detailed analysis of the optimised code}{15}{subsubsection.3.2.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces v2, 16 threads: \texttt  {solve} (dark red) and the parallel \texttt  {copy\_mat} (magenta) alternate with only thin barriers between them. The left part is the first iteration (warm-up).}}{15}{figure.caption.19}\protected@file@percent }
-\newlabel{fig:paraver-v2}{{9}{15}{v2, 16 threads: \texttt {solve} (dark red) and the parallel \texttt {copy\_mat} (magenta) alternate with only thin barriers between them. The left part is the first iteration (warm-up)}{figure.caption.19}{}}
-\@writefile{toc}{\contentsline {paragraph}{Further optimisation (not implemented).}{15}{section*.20}\protected@file@percent }
-\gdef \@abspage@last{15}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Gauss-Seidel}{8}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Task dependency graphs.}{9}{section*.12}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces TDGs of Gauss-Seidel, 4 iterations. In G2 each iteration contains a wavefront of dependent blocks.}}{9}{figure.caption.13}\protected@file@percent }
+\newlabel{fig:tdg-gauss}{{7}{9}{TDGs of Gauss-Seidel, 4 iterations. In G2 each iteration contains a wavefront of dependent blocks}{figure.caption.13}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces TDG of G3 (blocks, no barrier between iterations): the wavefronts of consecutive iterations overlap.}}{10}{figure.caption.14}\protected@file@percent }
+\newlabel{fig:tdg-gauss-nb}{{8}{10}{TDG of G3 (blocks, no barrier between iterations): the wavefronts of consecutive iterations overlap}{figure.caption.14}{}}
+\@writefile{toc}{\contentsline {paragraph}{Simulated parallel execution.}{10}{section*.15}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Tareador simulation of Gauss-Seidel: simulated time and speedup with respect to 1 processor. The 1-processor times correspond to the total number of instructions of each graph.}}{10}{table.caption.16}\protected@file@percent }
+\newlabel{tab:tareador-gauss}{{2}{10}{Tareador simulation of Gauss-Seidel: simulated time and speedup with respect to 1 processor. The 1-processor times correspond to the total number of instructions of each graph}{table.caption.16}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces G1, 16 processors: one \texttt  {gausseidel} task at a time.}}{11}{figure.caption.17}\protected@file@percent }
+\newlabel{fig:sim-gauss-coarse}{{9}{11}{G1, 16 processors: one \texttt {gausseidel} task at a time}{figure.caption.17}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces G2: wavefront execution; parallelism fills and drains in every iteration.}}{12}{figure.caption.18}\protected@file@percent }
+\newlabel{fig:sim-gauss-blocks}{{10}{12}{G2: wavefront execution; parallelism fills and drains in every iteration}{figure.caption.18}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces G3: without the barrier, consecutive iterations overlap and more processors are used.}}{12}{figure.caption.19}\protected@file@percent }
+\newlabel{fig:sim-gauss-nb}{{11}{12}{G3: without the barrier, consecutive iterations overlap and more processors are used}{figure.caption.19}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Parallel Jacobi}{13}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Data decomposition implementation}{13}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.1}Overall analysis}{14}{subsubsection.3.1.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces \texttt  {modelfactors} for v1 (parallel \texttt  {solve}, sequential \texttt  {copy\_mat}).}}{14}{table.caption.20}\protected@file@percent }
+\newlabel{tab:mf-v1}{{3}{14}{\texttt {modelfactors} for v1 (parallel \texttt {solve}, sequential \texttt {copy\_mat})}{table.caption.20}{}}
+\@writefile{toc}{\contentsline {paragraph}{The unmodified template (v0).}{15}{section*.21}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces \texttt  {modelfactors} for v0, the unmodified template (incorrect code, shown only for comparison).}}{15}{table.caption.22}\protected@file@percent }
+\newlabel{tab:mf-v0}{{4}{15}{\texttt {modelfactors} for v0, the unmodified template (incorrect code, shown only for comparison)}{table.caption.22}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.2}Detailed analysis}{15}{subsubsection.3.1.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces v1, 16 threads. Narrow pulses: parallel \texttt  {solve} (all 16 threads). Wide gaps: sequential \texttt  {copy\_mat}, with instantaneous parallelism equal to 1.}}{16}{figure.caption.23}\protected@file@percent }
+\newlabel{fig:paraver-v1}{{12}{16}{v1, 16 threads. Narrow pulses: parallel \texttt {solve} (all 16 threads). Wide gaps: sequential \texttt {copy\_mat}, with instantaneous parallelism equal to 1}{figure.caption.23}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Optimisation}{16}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.1}Overall analysis of the optimised code}{17}{subsubsection.3.2.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces \texttt  {modelfactors} for v2 (parallel \texttt  {solve} and \texttt  {copy\_mat}).}}{17}{table.caption.24}\protected@file@percent }
+\newlabel{tab:mf-v2}{{5}{17}{\texttt {modelfactors} for v2 (parallel \texttt {solve} and \texttt {copy\_mat})}{table.caption.24}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {13}{\ignorespaces Strong scalability of v2 (\texttt  {submit-strong-omp.sh}, Jacobi, 1 to 32 threads).}}{18}{figure.caption.25}\protected@file@percent }
+\newlabel{fig:strong-v2}{{13}{18}{Strong scalability of v2 (\texttt {submit-strong-omp.sh}, Jacobi, 1 to 32 threads)}{figure.caption.25}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Comparison of the first implementation (v1) and the optimised one (v2).}}{18}{table.caption.26}\protected@file@percent }
+\newlabel{tab:v1v2}{{6}{18}{Comparison of the first implementation (v1) and the optimised one (v2)}{table.caption.26}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.2}Detailed analysis of the optimised code}{19}{subsubsection.3.2.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {14}{\ignorespaces v2, 16 threads: \texttt  {solve} (dark red) and the parallel \texttt  {copy\_mat} (magenta) alternate with only thin barriers between them. The left part is the first iteration (warm-up).}}{19}{figure.caption.27}\protected@file@percent }
+\newlabel{fig:paraver-v2}{{14}{19}{v2, 16 threads: \texttt {solve} (dark red) and the parallel \texttt {copy\_mat} (magenta) alternate with only thin barriers between them. The left part is the first iteration (warm-up)}{figure.caption.27}{}}
+\@writefile{toc}{\contentsline {paragraph}{Further optimisation (not implemented).}{19}{section*.28}\protected@file@percent }
+\gdef \@abspage@last{19}

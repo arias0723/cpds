@@ -12,7 +12,7 @@
 \usepackage{listings}
 \usepackage{subcaption}
 
-\graphicspath{{analysis-jacobi/}{analisis-gauss/}}
+\graphicspath{{analysis-jacobi/}{analysis-gauss/}}
 
 \lstset{
   basicstyle=\ttfamily\small,
@@ -204,8 +204,115 @@ In the timelines, the yellow lines are the task creation and synchronisation edg
   \item \texttt{copy\_mat} must also be parallelised. Otherwise it becomes the bottleneck, as in J2.
 \end{itemize}
 
-% \subsection{Gauss-Seidel}
-% TODO: G1 (coarse) and G2 (blocks) TDGs and simulations.
+\subsection{Gauss-Seidel}
+
+Gauss-Seidel updates \texttt{u} in place. To compute point $(i,j)$ it needs the \emph{new} values of the point above, $(i-1,j)$, and the point to the left, $(i,j-1)$, which have already been updated in the current iteration. It also needs the \emph{old} values of the point below and the point to the right, which have not been updated yet. At block level, block $(b_i,b_j)$ must therefore wait for the block above, $(b_i-1,b_j)$, and the block to the left, $(b_i,b_j-1)$. This is what makes the blocking provided in the code necessary: without blocks there would be a single task and no parallelism.
+
+We explored three task decompositions. The source code of each version is stored in the directory \texttt{src/tareador-gauss/}.
+\begin{description}
+  \item[G1 (coarse):] one task per call to \texttt{solve} (\texttt{gausseidel} in \texttt{heat-tareador.c}).
+  \item[G2 (blocks):] G1 plus the 16 \texttt{solve(\%d,\%d)} block tasks, nested inside the \texttt{gausseidel} task. Each iteration must finish before the next one starts, as in the real code, where \texttt{solve} returns the residual that the \texttt{while} loop checks.
+  \item[G3 (blocks, no barrier):] only the 16 block tasks, without the outer \texttt{gausseidel} task. Consecutive iterations are allowed to overlap.
+\end{description}
+
+\paragraph{Task dependency graphs.}
+G1 (Figure~\ref{fig:tdg-gauss}a) is again a sequential chain: each iteration reads and writes all of \texttt{u}. In G2 (Figure~\ref{fig:tdg-gauss}b), unlike Jacobi, \emph{there are dependencies between the blocks of the same iteration}: every block has incoming edges from the block above and the block to the left. The blocks that can run at the same time are those on the same anti-diagonal ($b_i+b_j$ constant). With $4\times4$ blocks, the parallelism within one iteration grows $1\to2\to3\to4$ and then decreases $4\to3\to2\to1$ (a wavefront). In G3 (Figure~\ref{fig:tdg-gauss-nb}) the iterations are no longer separated. Block $(0,0)$ of iteration $t+1$ only waits for blocks $(0,1)$ and $(1,0)$ of iteration $t$, which must read its old values before it overwrites them. The wavefronts of consecutive iterations therefore overlap, producing the diamond-shaped graph.
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[t]{0.3\textwidth}
+    \centering
+    \includegraphics[height=0.5\textheight]{gauss_dg_coarse.pdf}
+    \caption{G1 (coarse)}
+  \end{subfigure}
+  \hspace{1cm}
+  \begin{subfigure}[t]{0.3\textwidth}
+    \centering
+    \includegraphics[height=0.5\textheight]{gauss_dg_blocks_small.pdf}
+    \caption{G2 (blocks)}
+  \end{subfigure}
+  \caption{TDGs of Gauss-Seidel, 4 iterations. In G2 each iteration contains a wavefront of dependent blocks.}
+  \label{fig:tdg-gauss}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.7\textwidth]{gauss_dg_blocks_nobarrier.pdf}
+  \caption{TDG of G3 (blocks, no barrier between iterations): the wavefronts of consecutive iterations overlap.}
+  \label{fig:tdg-gauss-nb}
+\end{figure}
+
+\paragraph{Simulated parallel execution.}
+Table~\ref{tab:tareador-gauss} shows the simulated time on 1, 4, 8 and 16 processors. Figures~\ref{fig:sim-gauss-coarse}--\ref{fig:sim-gauss-nb} show some of the timelines.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+Version & 1 proc. & 4 proc. & 8 proc. & 16 proc. \\
+\midrule
+G1 coarse            & 389.5 ms & 389.5 ms & 389.5 ms & 389.5 ms \\
+                     & 1.00     & 1.00     & 1.00     & 1.00 \\
+G2 blocks            & 389.7 ms & 172.9 ms & 172.9 ms & 172.9 ms \\
+                     & 1.00     & 2.25     & 2.25     & 2.25 \\
+G3 blocks, no barrier & 389.7 ms & 113.7 ms & 86.1 ms  & 86.1 ms \\
+                     & 1.00     & 3.43     & 4.53     & 4.53 \\
+\bottomrule
+\end{tabular}
+\caption{Tareador simulation of Gauss-Seidel: simulated time and speedup with respect to 1 processor. The 1-processor times correspond to the total number of instructions of each graph.}
+\label{tab:tareador-gauss}
+\end{table}
+
+\begin{itemize}
+  \item \textbf{G1} has no parallelism (Figure~\ref{fig:sim-gauss-coarse}): one task at a time and a speedup of 1.
+  \item \textbf{G2} reaches $2.25\times$ and does not improve beyond 4 processors. The critical path of one iteration crosses 7 blocks, for example $(0,0)\to(0,1)\to(1,1)\to(1,2)\to(2,2)\to(2,3)\to(3,3)$, about 43\,k of the 97\,k instructions of the iteration. This bounds the speedup to about $97/43 \approx 2.3$. At most 4 blocks (one anti-diagonal) are ever ready at the same time, so processors 5 to 16 stay idle, and the 4, 8 and 16-processor executions take exactly the same time. Figure~\ref{fig:sim-gauss-blocks} shows the filling and draining of the wavefront in every iteration.
+  \item \textbf{G3} reaches $4.53\times$. Each new wavefront starts about two block steps after the previous one, so the critical path of 4 iterations shrinks from $4\times7=28$ to about $7+3\times2=13$ block steps. It uses up to about 8 processors, so 16 processors give no further improvement. This overlap is \emph{not} possible in the real code, because the \texttt{while} loop must check the residual of an iteration before starting the next. G2 is therefore the realistic model, and G3 shows the cost of that barrier.
+\end{itemize}
+
+The main conclusion is that the parallelism of Gauss-Seidel is limited by the number of blocks on an anti-diagonal and by the fill and drain of the wavefront in each iteration. Increasing the number of blocks in the $j$ dimension (Section~5.3) shortens these phases relative to the total, and is the only way to use more threads.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{gauss_coarse_16cores.png}
+  \caption{G1, 16 processors: one \texttt{gausseidel} task at a time.}
+  \label{fig:sim-gauss-coarse}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}{\textwidth}
+    \centering
+    \includegraphics[width=0.9\textwidth]{gauss_blocks_4cores.png}
+    \caption{4 processors}
+  \end{subfigure}
+
+  \vspace{2mm}
+  \begin{subfigure}{\textwidth}
+    \centering
+    \includegraphics[width=0.9\textwidth]{gauss_blocks_16cores.png}
+    \caption{16 processors: same time as with 4, at most 4 processors busy after the first iteration}
+  \end{subfigure}
+  \caption{G2: wavefront execution; parallelism fills and drains in every iteration.}
+  \label{fig:sim-gauss-blocks}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}{\textwidth}
+    \centering
+    \includegraphics[width=0.9\textwidth]{gauss_blocks_nobarrier_4cores.png}
+    \caption{4 processors}
+  \end{subfigure}
+
+  \vspace{2mm}
+  \begin{subfigure}{\textwidth}
+    \centering
+    \includegraphics[width=0.9\textwidth]{gauss_blocks_nobarrier_16cores.png}
+    \caption{16 processors}
+  \end{subfigure}
+  \caption{G3: without the barrier, consecutive iterations overlap and more processors are used.}
+  \label{fig:sim-gauss-nb}
+\end{figure}
 
 % ================================================================
 \section{Parallel Jacobi}

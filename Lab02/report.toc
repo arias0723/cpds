@@ -4,12 +4,15 @@
 \contentsline {paragraph}{Task dependency graphs.}{4}{section*.3}%
 \contentsline {paragraph}{Simulated parallel execution.}{6}{section*.6}%
 \contentsline {paragraph}{Conclusions for the OpenMP implementation.}{8}{section*.11}%
-\contentsline {section}{\numberline {3}Parallel Jacobi}{8}{section.3}%
-\contentsline {subsection}{\numberline {3.1}Data decomposition implementation}{8}{subsection.3.1}%
-\contentsline {subsubsection}{\numberline {3.1.1}Overall analysis}{10}{subsubsection.3.1.1}%
-\contentsline {paragraph}{The unmodified template (v0).}{10}{section*.13}%
-\contentsline {subsubsection}{\numberline {3.1.2}Detailed analysis}{11}{subsubsection.3.1.2}%
-\contentsline {subsection}{\numberline {3.2}Optimisation}{12}{subsection.3.2}%
-\contentsline {subsubsection}{\numberline {3.2.1}Overall analysis of the optimised code}{13}{subsubsection.3.2.1}%
-\contentsline {subsubsection}{\numberline {3.2.2}Detailed analysis of the optimised code}{15}{subsubsection.3.2.2}%
-\contentsline {paragraph}{Further optimisation (not implemented).}{15}{section*.20}%
+\contentsline {subsection}{\numberline {2.2}Gauss-Seidel}{8}{subsection.2.2}%
+\contentsline {paragraph}{Task dependency graphs.}{9}{section*.12}%
+\contentsline {paragraph}{Simulated parallel execution.}{10}{section*.15}%
+\contentsline {section}{\numberline {3}Parallel Jacobi}{13}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Data decomposition implementation}{13}{subsection.3.1}%
+\contentsline {subsubsection}{\numberline {3.1.1}Overall analysis}{14}{subsubsection.3.1.1}%
+\contentsline {paragraph}{The unmodified template (v0).}{15}{section*.21}%
+\contentsline {subsubsection}{\numberline {3.1.2}Detailed analysis}{15}{subsubsection.3.1.2}%
+\contentsline {subsection}{\numberline {3.2}Optimisation}{16}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}Overall analysis of the optimised code}{17}{subsubsection.3.2.1}%
+\contentsline {subsubsection}{\numberline {3.2.2}Detailed analysis of the optimised code}{19}{subsubsection.3.2.2}%
+\contentsline {paragraph}{Further optimisation (not implemented).}{19}{section*.28}%
