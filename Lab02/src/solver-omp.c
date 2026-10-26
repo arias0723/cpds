@@ -10,7 +10,7 @@
 extern int userparam;
 
 // Function to copy one matrix into another (excluding boundary cells)
-void copy_mat (double *u, double *v, unsigned sizex, unsigned sizey) {
+void copy_matOld (double *u, double *v, unsigned sizex, unsigned sizey) {
 
     for (int i = 1; i < sizex - 1; i++) {
         for (int j = 1; j < sizey - 1; j++) {
@@ -20,10 +20,24 @@ void copy_mat (double *u, double *v, unsigned sizex, unsigned sizey) {
 
 }
 
+void copy_mat (double *u, double *v, unsigned sizex, unsigned sizey) {
+    #pragma omp parallel
+    {
+        int myid = omp_get_thread_num();
+        int nthr = omp_get_num_threads();
+        int i_start = lowerb(myid, nthr, sizex);
+        int i_end   = upperb(myid, nthr, sizex);
+
+        for (int i = max(1, i_start); i <= min(sizex - 2, i_end); i++)
+            for (int j = 1; j < sizey - 1; j++)
+                v[i * sizey + j] = u[i * sizey + j];
+    }
+}
+
 double solve_gauss (double *u, unsigned sizex, unsigned sizey);
 
 // 2D solver: one iteration step (Jacobi)
-double solve (double *u, double *unew, unsigned sizex, unsigned sizey) {
+double solveOld (double *u, double *unew, unsigned sizex, unsigned sizey) {
     double tmp, diff, sum = 0.0;
 
     if (u == unew) return solve_gauss(u, sizex, sizey);
@@ -41,6 +55,33 @@ double solve (double *u, double *unew, unsigned sizex, unsigned sizey) {
         }
     }
 
+    return sum;
+}
+
+double solve (double *u, double *unew, unsigned sizex, unsigned sizey) {
+    double tmp, diff, sum = 0.0;
+
+    if (u == unew) return solve_gauss(u, sizex, sizey);
+
+    #pragma omp parallel private(tmp, diff) reduction(+:sum)
+    {
+        int myid  = omp_get_thread_num();
+        int nthr  = omp_get_num_threads();
+        int i_start = lowerb(myid, nthr, sizex);
+        int i_end   = upperb(myid, nthr, sizex);
+
+        for (int i = max(1, i_start); i <= min(sizex - 2, i_end); i++) {
+            for (int j = 1; j < sizey - 1; j++) {
+                tmp = 0.25 * ( u[ i * sizey       + (j - 1) ] +
+                               u[ i * sizey       + (j + 1) ] +
+                               u[ (i - 1) * sizey + j       ] +
+                               u[ (i + 1) * sizey + j       ] );
+                diff = tmp - u[i * sizey + j];
+                sum += diff * diff;
+                unew[i * sizey + j] = tmp;
+            }
+        }
+    }
     return sum;
 }
 
