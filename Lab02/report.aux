@@ -60,5 +60,27 @@
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.2}Detailed analysis of the optimised code}{19}{subsubsection.3.2.2}\protected@file@percent }
 \@writefile{lof}{\contentsline {figure}{\numberline {14}{\ignorespaces v2, 16 threads: \texttt  {solve} (dark red) and the parallel \texttt  {copy\_mat} (magenta) alternate with only thin barriers between them. The left part is the first iteration (warm-up).}}{19}{figure.caption.27}\protected@file@percent }
 \newlabel{fig:paraver-v2}{{14}{19}{v2, 16 threads: \texttt {solve} (dark red) and the parallel \texttt {copy\_mat} (magenta) alternate with only thin barriers between them. The left part is the first iteration (warm-up)}{figure.caption.27}{}}
-\@writefile{toc}{\contentsline {paragraph}{Further optimisation (not implemented).}{19}{section*.28}\protected@file@percent }
-\gdef \@abspage@last{19}
+\@writefile{toc}{\contentsline {paragraph}{Further optimisation: pointer swap (v3).}{19}{section*.28}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Parallel Gauss-Seidel}{20}{section.4}\protected@file@percent }
+\newlabel{sec:gauss}{{4}{20}{Parallel Gauss-Seidel}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Explicit tasks}{20}{subsection.4.1}\protected@file@percent }
+\newlabel{sec:gauss-tasks}{{4.1}{20}{Explicit tasks}{subsection.4.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces \texttt  {modelfactors} for the task version.}}{20}{table.caption.29}\protected@file@percent }
+\newlabel{tab:mf-tasks}{{7}{20}{\texttt {modelfactors} for the task version}{table.caption.29}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {15}{\ignorespaces Tasks, 16 threads: instantaneous parallelism forms one triangle per iteration; a single thread creates all the tasks of each iteration.}}{21}{figure.caption.30}\protected@file@percent }
+\newlabel{fig:paraver-tasks}{{15}{21}{Tasks, 16 threads: instantaneous parallelism forms one triangle per iteration; a single thread creates all the tasks of each iteration}{figure.caption.30}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Do-across}{22}{subsection.4.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces \texttt  {modelfactors} for the do-across version.}}{22}{table.caption.31}\protected@file@percent }
+\newlabel{tab:mf-doacross}{{8}{22}{\texttt {modelfactors} for the do-across version}{table.caption.31}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {16}{\ignorespaces Do-across, 16 threads: all threads busy all the time, no task creation.}}{23}{figure.caption.32}\protected@file@percent }
+\newlabel{fig:paraver-doacross}{{16}{23}{Do-across, 16 threads: all threads busy all the time, no task creation}{figure.caption.32}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {17}{\ignorespaces Strong scalability of Gauss-Seidel (1 to 32 threads, \texttt  {userparam}=2).}}{23}{figure.caption.33}\protected@file@percent }
+\newlabel{fig:strong-gauss}{{17}{23}{Strong scalability of Gauss-Seidel (1 to 32 threads, \texttt {userparam}=2)}{figure.caption.33}{}}
+\@writefile{toc}{\contentsline {paragraph}{Is the speedup linear?}{24}{section*.34}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Choosing \texttt  {userparam}}{24}{subsection.4.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Do-across, 16 threads: execution time for different values of \texttt  {userparam}.}}{24}{table.caption.35}\protected@file@percent }
+\newlabel{tab:userparam}{{9}{24}{Do-across, 16 threads: execution time for different values of \texttt {userparam}}{table.caption.35}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Comparison and data locality}{25}{subsection.4.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces L2 cache misses (\texttt  {submit-strong-memory.sh}, \texttt  {userparam}=16). The 16-thread run of the task version did not complete.}}{25}{table.caption.36}\protected@file@percent }
+\newlabel{tab:l2}{{10}{25}{L2 cache misses (\texttt {submit-strong-memory.sh}, \texttt {userparam}=16). The 16-thread run of the task version did not complete}{table.caption.36}{}}
+\gdef \@abspage@last{25}

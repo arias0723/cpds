@@ -32,7 +32,7 @@
   Concurrency, Parallelism and Distributed Systems (CPDS) \\
   FIB -- Universitat Polit\`ecnica de Catalunya
 }
-\date{October 26th, 2026}
+\date{October 27th, 2026}
 
 \begin{document}
 \maketitle
@@ -51,9 +51,9 @@ The program simulates heat diffusion in a 2D body with two heat sources, one in 
   \item \textbf{Jacobi} reads \texttt{u} and writes the new values into a second matrix, \texttt{uhelp}. After each iteration, \texttt{copy\_mat} copies \texttt{uhelp} back into \texttt{u}.
   \item \textbf{Gauss-Seidel} updates \texttt{u} in place, so each point uses values of its upper and left neighbours that were already updated in the same iteration.
 \end{itemize}
-The main loop stops when the residual drops below \texttt{param.residual} or when \texttt{param.maxiter} is reached. With \texttt{test.dat}, Jacobi converges after 15\,756 iterations.
+The main loop stops when the residual drops below \texttt{param.residual} or when \texttt{param.maxiter} is reached. With \texttt{test.dat}, Jacobi converges after 15\,756 iterations and Gauss-Seidel after 12\,409.
 
-Figure~\ref{fig:seq} shows the images produced by the sequential code. They are the reference for validating the parallel versions: every parallel Jacobi image in this report is byte-for-byte identical to \texttt{heat-jacobi-seq.ppm} (checked with \texttt{cmp}). The two solvers produce slightly different images, so each parallel version is always compared with the image of its own solver.
+Figure~\ref{fig:seq} shows the images produced by the sequential code. They are the reference for validating the parallel versions: every parallel image in this report is byte-for-byte identical to the sequential one of its solver (checked with \texttt{cmp}), and converges in the same number of iterations. The two solvers produce slightly different images, so each parallel version is always compared with the image of its own solver.
 
 \begin{figure}[H]
   \centering
@@ -208,7 +208,7 @@ In the timelines, the yellow lines are the task creation and synchronisation edg
 
 Gauss-Seidel updates \texttt{u} in place. To compute point $(i,j)$ it needs the \emph{new} values of the point above, $(i-1,j)$, and the point to the left, $(i,j-1)$, which have already been updated in the current iteration. It also needs the \emph{old} values of the point below and the point to the right, which have not been updated yet. At block level, block $(b_i,b_j)$ must therefore wait for the block above, $(b_i-1,b_j)$, and the block to the left, $(b_i,b_j-1)$. This is what makes the blocking provided in the code necessary: without blocks there would be a single task and no parallelism.
 
-We explored three task decompositions. The source code of each version is stored in the directory \texttt{src/tareador-gauss/}.
+We explored three task decompositions, which differ only in the Tareador task annotations that are enabled.
 \begin{description}
   \item[G1 (coarse):] one task per call to \texttt{solve} (\texttt{gausseidel} in \texttt{heat-tareador.c}).
   \item[G2 (blocks):] G1 plus the 16 \texttt{solve(\%d,\%d)} block tasks, nested inside the \texttt{gausseidel} task. Each iteration must finish before the next one starts, as in the real code, where \texttt{solve} returns the residual that the \texttt{while} loop checks.
@@ -269,7 +269,7 @@ G3 blocks, no barrier & 389.7 ms & 113.7 ms & 86.1 ms  & 86.1 ms \\
   \item \textbf{G3} reaches $4.53\times$. Each new wavefront starts about two block steps after the previous one, so the critical path of 4 iterations shrinks from $4\times7=28$ to about $7+3\times2=13$ block steps. It uses up to about 8 processors, so 16 processors give no further improvement. This overlap is \emph{not} possible in the real code, because the \texttt{while} loop must check the residual of an iteration before starting the next. G2 is therefore the realistic model, and G3 shows the cost of that barrier.
 \end{itemize}
 
-The main conclusion is that the parallelism of Gauss-Seidel is limited by the number of blocks on an anti-diagonal and by the fill and drain of the wavefront in each iteration. Increasing the number of blocks in the $j$ dimension (Section~5.3) shortens these phases relative to the total, and is the only way to use more threads.
+The main conclusion is that the parallelism of Gauss-Seidel is limited by the number of blocks on an anti-diagonal and by the fill and drain of the wavefront in each iteration. Increasing the number of blocks in the $j$ dimension (Section~\ref{sec:gauss}) shortens these phases relative to the total, and is the only way to use more threads.
 
 \begin{figure}[H]
   \centering
@@ -493,7 +493,176 @@ The other metrics are also good. Load balancing is 98.7\% and the IPC scalabilit
 
 In Figure~\ref{fig:paraver-v2}, after the first iteration, the two parallel regions of each iteration alternate on all 16 threads, and the instantaneous parallelism stays at 16 almost all the time, with only a few short drops at the barriers. About 50 iterations fit in 12\,ms (about 0.23\,ms per iteration, consistent with 0.20\,s for 1\,000 iterations), compared with about 1.5\,ms per iteration in v1. The sequential gaps of Figure~\ref{fig:paraver-v1} have disappeared. The first iteration is slower and less balanced (some threads finish the first copy early) because the caches are still cold and memory pages are touched for the first time.
 
-\paragraph{Further optimisation (not implemented).}
-\texttt{copy\_mat} only moves the new values back into \texttt{u}. Since \texttt{solve} only needs the addresses of the input and output matrices, the copy could be removed completely by swapping the \texttt{u} and \texttt{uhelp} pointers after each iteration. This replaces $O(N^2)$ work with $O(1)$ work and removes one parallel region and its barrier per iteration. It is safe because \texttt{uhelp} is initialised as a full copy of \texttt{u}, so both matrices hold the same boundary values. We have not implemented this version.
+\paragraph{Further optimisation: pointer swap (v3).}
+\texttt{copy\_mat} only moves the new values back into \texttt{u}. Since \texttt{solve} only needs the addresses of the input and output matrices, the copy can be removed completely by swapping the pointers after each iteration:
+\begin{lstlisting}
+residual = solve(param.u, param.uhelp, np, np);
+double *temp = param.u; param.u = param.uhelp; param.uhelp = temp;
+\end{lstlisting}
+This replaces $O(N^2)$ work with $O(1)$ and removes one parallel region and its barrier per iteration. It is safe because \texttt{uhelp} is initialised as a full copy of \texttt{u}, so both matrices hold the same boundary values; the image is identical to the sequential one. On 16 threads the time drops from 0.20\,s (v2) to 0.18\,s, with $\phi = 98.59\%$, a speedup of $10.69\times$ with respect to 1 thread, load balancing 99.64\% and IPC scalability 85.13\%. The gain over v2 is small because the parallel copy already scaled well; the remaining loss is memory bandwidth, not synchronisation.
+
+% ================================================================
+\section{Parallel Gauss-Seidel}
+\label{sec:gauss}
+% ================================================================
+
+Both versions use $n_{bi}$ = number of threads block rows and $n_{bj} = n_{bi}\cdot\texttt{userparam}$ block columns (\texttt{userparam}=2 in the scripts, set with \texttt{-u}). Both were validated against the sequential image (identical, 12\,409 iterations) with 1, 4 and 8 threads and \texttt{userparam} 1, 2 and 4.
+
+\subsection{Explicit tasks}
+\label{sec:gauss-tasks}
+
+One task per block, created by a single thread. The \texttt{depend} clauses implement the wavefront of G2: a block waits for the block above and the block to the left. The array \texttt{blk} only provides addresses for the dependences; it is padded so that the first row and column need no special case.
+
+\begin{lstlisting}
+char blk[nblocksi+1][nblocksj+1];
+#pragma omp parallel
+#pragma omp single
+for (int blocki=0; blocki<nblocksi; ++blocki)
+  for (int blockj=0; blockj<nblocksj; ++blockj)
+    #pragma omp task firstprivate(blocki, blockj) \
+            depend(in: blk[blocki][blockj+1], blk[blocki+1][blockj]) \
+            depend(out: blk[blocki+1][blockj+1])
+    {
+      double tmp, diff, lsum = 0.0;
+      ... /* update block, lsum += diff*diff */
+      #pragma omp atomic
+      sum += lsum;
+    }
+\end{lstlisting}
+
+\begin{table}[H]
+\centering
+\small
+\input{analysis-gauss/mf-tasks.tex}
+\caption{\texttt{modelfactors} for the task version.}
+\label{tab:mf-tasks}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{heat-omp-16-boada-18-cutter-tasks.png}
+  \caption{Tasks, 16 threads: instantaneous parallelism forms one triangle per iteration; a single thread creates all the tasks of each iteration.}
+  \label{fig:paraver-tasks}
+\end{figure}
+
+The version scales poorly: $4.03\times$ on 16 threads in \texttt{modelfactors} and at most $3.35\times$ (16 threads) with respect to the sequential code in the strong-scalability test, decreasing to $1.64\times$ on 32 threads. Load balance is good (97\%); the loss is in-execution efficiency (36.5\%), for three reasons:
+\begin{itemize}
+  \item \textbf{Wavefront.} Parallelism fills and drains in every iteration (triangles in Figure~\ref{fig:paraver-tasks}), as predicted by G2.
+  \item \textbf{Task creation.} With 16 threads there are $16\times32=512$ tasks per iteration of only 19.5\,$\mu$s each, all created by one thread. The other 15 threads wait for tasks to be created: the synchronisation overhead per task is 172\%. More threads means more and smaller tasks, so the time increases beyond 16 threads.
+  \item \textbf{Locality.} Blocks go to whichever thread is free, so data moves between caches every iteration (Table~\ref{tab:l2}).
+\end{itemize}
+
+The 1-thread execution (7.57\,s) is slower than the sequential code (speedup 0.60, the same for the do-across version) because of the block shape, not because of OpenMP. The sequential code uses $8\times64$ blocks, while the parallel one with 1 thread uses $1\times2$ blocks. On our own machine, the same code compiled without OpenMP and run on 1 thread drops from 6.1\,s to 1.7\,s when going from 2 to 128 block columns (sequential code: 2.8\,s). Our explanation is that each point depends on its left neighbour, so a row is a chain of dependent additions; with narrow blocks the rows are short and the processor can overlap the chains of consecutive rows. The speedups with respect to 1 thread in \texttt{modelfactors} are therefore optimistic, and the strong-scalability plots, which use the sequential code as reference, are the fair comparison.
+
+\subsection{Do-across}
+
+The two block loops form a do-across nest with \texttt{ordered(2)}. With \texttt{schedule(static)} each thread gets one row of blocks and processes it left to right. A block waits (\texttt{sink}) for the block above and the block to the left, and signals (\texttt{source}) when it is done. Sinks outside the iteration space are ignored.
+
+\begin{lstlisting}
+#pragma omp parallel for ordered(2) schedule(static) reduction(+:sum)
+for (int blocki=0; blocki<nblocksi; ++blocki)
+  for (int blockj=0; blockj<nblocksj; ++blockj) {
+    #pragma omp ordered depend(sink: blocki-1, blockj) depend(sink: blocki, blockj-1)
+    { ... /* update block, sum += diff*diff */ }
+    #pragma omp ordered depend(source)
+  }
+\end{lstlisting}
+
+\begin{table}[H]
+\centering
+\small
+\input{analysis-gauss/mf-doacross.tex}
+\caption{\texttt{modelfactors} for the do-across version.}
+\label{tab:mf-doacross}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{heat-omp-16-boada-18-cutter-doacross.png}
+  \caption{Do-across, 16 threads: all threads busy all the time, no task creation.}
+  \label{fig:paraver-doacross}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\linewidth, trim=0 60 0 60, clip]{strong-heat-omp-gausseidel-1-32-3-boada-18-tasks.pdf}
+    \caption{Tasks}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\linewidth, trim=0 60 0 60, clip]{strong-heat-omp-gausseidel-1-32-3-boada-19-doacross.pdf}
+    \caption{Do-across}
+  \end{subfigure}
+  \caption{Strong scalability of Gauss-Seidel (1 to 32 threads, \texttt{userparam}=2).}
+  \label{fig:strong-gauss}
+\end{figure}
+
+The time on 16 threads drops from 1.88\,s to 0.62\,s ($12.24\times$ in \texttt{modelfactors}, $7.7\times$ with respect to the sequential code), and the speedup keeps growing up to $12.4\times$ on 32 threads. There are no explicit tasks, and the in-execution efficiency is 99\%. The wavefront wait still exists, but the metrics indicate that the runtime implements it as a busy-wait inside the implicit task: it appears as extra instructions (instruction scalability 81.6\%) instead of synchronisation time, and Paraver shows all threads as running (Figure~\ref{fig:paraver-doacross}). The global efficiency (79\%) is close to the theoretical wavefront efficiency $n_{bj}/(n_{bi}+n_{bj}-1) = 32/47 = 68\%$, and above it thanks to the IPC gain (114.6\%) from better locality. The 4-thread run shows an anomalous load balance (86\%) and fork/join time, probably due to noise. The frequency scalability (86\%) reflects the lower clock when many cores are active.
+
+\paragraph{Is the speedup linear?} No. It is sub-linear (efficiency 76--79\%), although much better than with tasks. Load balance and in-execution efficiency are about 99\%, so the loss is not visible as idle time. It comes from the fill and drain of the wavefront in every iteration: the threads of the lower rows spin in \texttt{depend(sink)} until the wavefront reaches them, which costs extra instructions (instruction scalability 81.6\%), plus the lower clock frequency (86\%).
+
+\subsection{Choosing \texttt{userparam}}
+
+Both versions read the number of block columns from the command line (\texttt{-u}), so no recompilation is needed:
+\begin{lstlisting}
+int nblocksi = omp_get_max_threads();
+int nblocksj = nblocksi * userparam;
+\end{lstlisting}
+
+\textbf{Why does $n_{bj}$ change the ratio between computation and synchronisation?} Each block synchronises once (one \texttt{sink}/\texttt{source} pair, or one task), and there are $n_{bi}\cdot n_{bj}$ blocks per iteration. The computation per block is proportional to $1/n_{bj}$, so the synchronisation per unit of computation grows linearly with $n_{bj}$. On the other hand, the wavefront needs $n_{bi}+n_{bj}-1$ steps, of which $n_{bi}-1$ are fill and drain, so more columns mean more parallelism: the efficiency bound $n_{bj}/(n_{bi}+n_{bj}-1)$ grows towards 1.
+
+Table~\ref{tab:userparam} shows the do-across version on 16 threads (\texttt{submit-userparam-omp.sh 16}, $n_{bj} = 16\cdot\texttt{userparam}$).
+
+\begin{table}[H]
+\centering
+\begin{tabular}{rrrr}
+\toprule
+\texttt{userparam} & $n_{bj}$ & Time (s) & MFlop/s \\
+\midrule
+1  & 16   & 0.940 & 12\,220 \\
+2  & 32   & 0.657 & 17\,478 \\
+4  & 64   & 0.498 & 23\,066 \\
+\textbf{8} & \textbf{128} & \textbf{0.436} & \textbf{26\,345} \\
+16 & 256  & 0.475 & 24\,190 \\
+32 & 512  & 0.644 & 17\,838 \\
+64 & 1024 & 1.112 & 10\,335 \\
+\bottomrule
+\end{tabular}
+\caption{Do-across, 16 threads: execution time for different values of \texttt{userparam}.}
+\label{tab:userparam}
+\end{table}
+
+The curve is U-shaped:
+\begin{itemize}
+  \item \textbf{Few, wide blocks} (1--4): the wavefront fill and drain is long, $n_{bj}/(n_{bi}+n_{bj}-1)$ is only $16/31 = 52\%$ for \texttt{userparam}=1. Wide blocks are also slow on a single core (Section~\ref{sec:gauss-tasks}).
+  \item \textbf{Many, narrow blocks} (16--64): the wavefront fills quickly, but each block does too little work to amortise the \texttt{ordered} synchronisation, and the row segments become too short for good spatial locality.
+  \item \textbf{Best value: \texttt{userparam}=8} ($16\times128$ blocks of $64\times8$ points), 0.436\,s. This is $1.5\times$ faster than with \texttt{userparam}=2, the value used in the previous sections.
+\end{itemize}
+
+\subsection{Comparison and data locality}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{rrrrr}
+\toprule
+ & \multicolumn{2}{c}{Tasks} & \multicolumn{2}{c}{Do-across} \\
+Threads & Total & Per thread & Total & Per thread \\
+\midrule
+1  & 228.1 M & 228.1 M & 227.1 M & 227.1 M \\
+4  & 260.5 M & 65.1 M  & 186.8 M & 46.7 M \\
+8  & 810.6 M & 101.3 M & 72.8 M  & 9.1 M \\
+16 & --      & --      & 49.9 M  & 3.1 M \\
+\bottomrule
+\end{tabular}
+\caption{L2 cache misses (\texttt{submit-strong-memory.sh}, \texttt{userparam}=16). The 16-thread run of the task version did not complete.}
+\label{tab:l2}
+\end{table}
+
+With do-across, the total number of L2 misses \emph{decreases} with the number of threads. The static schedule assigns the same row band to the same thread in every iteration (owner-computes rule), and with 16 threads each band is about 512\,KB, which stays in that thread's cache between iterations. With tasks, a block is executed by whichever thread is free, so the data moves between caches and the misses more than triple from 4 to 8 threads.
+
+\textbf{Does this translate into performance?} Yes. With 16 threads, the IPC scalability is 114.6\% for do-across against 80.4\% for tasks: the do-across threads find their data in cache and execute faster than the single thread. Together with the absence of task-creation overhead, this makes do-across $3\times$ faster on 16 threads (0.62\,s against 1.88\,s), so it is the better strategy for this problem.
 
 \end{document}

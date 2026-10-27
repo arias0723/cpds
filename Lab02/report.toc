@@ -15,4 +15,10 @@
 \contentsline {subsection}{\numberline {3.2}Optimisation}{16}{subsection.3.2}%
 \contentsline {subsubsection}{\numberline {3.2.1}Overall analysis of the optimised code}{17}{subsubsection.3.2.1}%
 \contentsline {subsubsection}{\numberline {3.2.2}Detailed analysis of the optimised code}{19}{subsubsection.3.2.2}%
-\contentsline {paragraph}{Further optimisation (not implemented).}{19}{section*.28}%
+\contentsline {paragraph}{Further optimisation: pointer swap (v3).}{19}{section*.28}%
+\contentsline {section}{\numberline {4}Parallel Gauss-Seidel}{20}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Explicit tasks}{20}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Do-across}{22}{subsection.4.2}%
+\contentsline {paragraph}{Is the speedup linear?}{24}{section*.34}%
+\contentsline {subsection}{\numberline {4.3}Choosing \texttt {userparam}}{24}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Comparison and data locality}{25}{subsection.4.4}%

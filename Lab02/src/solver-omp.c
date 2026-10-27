@@ -147,39 +147,44 @@ double solve (double *u, double *unew, unsigned sizex, unsigned sizey) {
 
 
 // 2D-blocked solver: one iteration step
+// Gauss-Seidel with do-across: ordered(2) loop nest, ordered with depend(sink/source)
 double solve_gauss (double *u, unsigned sizex, unsigned sizey) {
-    double tmp, diff, sum=0.0;
+    double sum=0.0;
 
     int nblocksi=omp_get_max_threads();
-    int nblocksj=1; /* Change to a proper value, since 1 implies no blocking. */
+    int nblocksj=nblocksi*userparam;
 
-#pragma omp parallel  // complete data sharing constructs here
-  {                   // and modify the code as needed.
+    // Both block loops form the do-across nest. Each iteration waits for the
+    // block above (new values) and the block to the left (new values, and it
+    // must not be overwritten before the left block has read the old ones).
+    // Sinks outside the iteration space (blocki-1 < 0, blockj-1 < 0) are ignored.
+    #pragma omp parallel for ordered(2) schedule(static) reduction(+:sum)
     for (int blocki=0; blocki<nblocksi; ++blocki) {
-	    /* In a block decomposition by rows each thread 
-	     * will take one iteration of this outer loop. */
-	 
-      int i_start = lowerb(blocki, nblocksi, sizex);
-      int i_end = upperb(blocki, nblocksi, sizex);
       for (int blockj=0; blockj<nblocksj; ++blockj) {
-        int j_start = lowerb(blockj, nblocksj, sizey);
-        int j_end = upperb(blockj, nblocksj, sizey);
+        #pragma omp ordered depend(sink: blocki-1, blockj) depend(sink: blocki, blockj-1)
+        {
+          int i_start = lowerb(blocki, nblocksi, sizex);
+          int i_end = upperb(blocki, nblocksi, sizex);
+          int j_start = lowerb(blockj, nblocksj, sizey);
+          int j_end = upperb(blockj, nblocksj, sizey);
+          double tmp, diff;
 
-	// Update current tile
-        for (int i=max(1, i_start); i<=min(sizex-2, i_end); i++) {
-          for (int j=max(1, j_start); j<=min(sizey-2, j_end); j++) {
-	        tmp = 0.25 * ( u[ i*sizey	   + (j-1) ] +  // left
-                           u[ i*sizey	   + (j+1) ] +  // right
-                           u[ (i-1)*sizey + j     ] +  // top
-                           u[ (i+1)*sizey + j     ] ); // bottom
-	        diff = tmp - u[i*sizey+ j];
-	        sum += diff * diff;
-	        u[i*sizey+j] = tmp;
+          // Update current tile
+          for (int i=max(1, i_start); i<=min(sizex-2, i_end); i++) {
+            for (int j=max(1, j_start); j<=min(sizey-2, j_end); j++) {
+              tmp = 0.25 * ( u[ i*sizey      + (j-1) ] +  // left
+                             u[ i*sizey      + (j+1) ] +  // right
+                             u[ (i-1)*sizey + j     ] +  // top
+                             u[ (i+1)*sizey + j     ] ); // bottom
+              diff = tmp - u[i*sizey+ j];
+              sum += diff * diff;
+              u[i*sizey+j] = tmp;
+            }
           }
         }
+        #pragma omp ordered depend(source)
       }
-    }
-  }
+    } // implicit barrier at the end of the parallel for
 
     return sum;
 }

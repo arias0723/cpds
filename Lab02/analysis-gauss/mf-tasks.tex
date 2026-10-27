@@ -1,0 +1,59 @@
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\multicolumn{5}{|c|}{Overview of whole program execution metrics} \\
+\hline
+\hline
+Number of processors & 1 & 4 & 8 & 16 \\
+\hline
+Elapsed time (sec)      &       7.57 &       3.44 &       2.43 &       1.88 \\
+\hline
+Speedup                 &       1.00 &       2.20 &       3.12 &       4.03 \\
+\hline
+Efficiency              &       1.00 &       0.55 &       0.39 &       0.25 \\
+\hline
+\end{tabular}
+\vspace{2mm}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\multicolumn{5}{|c|}{Overview of the Efficiency metrics in parallel fraction, $\phi$=99.65\%} \\
+\hline
+\hline
+Number of processors & 1 & 4 & 8 & 16 \\
+\hline
+\hline
+Global efficiency                      &     99.95\% &     55.23\% &     39.30\% &     25.55\% \\
+\hline
+\hline
+Parallelization strategy efficiency &     99.95\% &     63.54\% &     55.12\% &     35.40\% \\
+\hline
+Load balancing                   &    100.00\% &     98.89\% &     98.21\% &     97.00\% \\
+In execution efficiency          &     99.95\% &     64.25\% &     56.12\% &     36.49\% \\
+\hline
+\hline
+Scalability for computation tasks   &    100.00\% &     86.93\% &     71.31\% &     72.18\% \\
+\hline
+IPC scalability                  &    100.00\% &     87.78\% &     73.66\% &     80.37\% \\
+Instruction scalability          &    100.00\% &     99.09\% &     97.00\% &     90.37\% \\
+Frequency scalability            &    100.00\% &     99.94\% &     99.80\% &     99.38\% \\
+\hline
+\end{tabular}
+\vspace{2mm}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\multicolumn{5}{|c|}{Statistics about implicit or explicit tasks in parallel fraction} \\
+\hline
+\hline
+Number of processors & 1 & 4 & 8 & 16 \\
+\hline
+\hline
+Number of explicit tasks executed (total)        &          2000.0 &         32000.0 &        128000.0 &        512000.0 \\
+\hline
+LB (number of explicit tasks executed)           &             1.0 &            0.99 &            0.97 &            0.92 \\
+\hline
+LB (time executing explicit tasks)               &             1.0 &            0.99 &            0.98 &            0.94 \\
+\hline
+Time per explicit task (average us)                 &         3770.31 &          270.32 &           81.83 &           19.46 \\
+\hline
+Overhead per explicit task (synch \%)             &            0.01 &           56.75 &           78.78 &          172.23 \\
+\hline
+\end{tabular}
