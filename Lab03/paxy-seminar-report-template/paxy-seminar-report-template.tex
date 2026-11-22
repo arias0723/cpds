@@ -1,0 +1,78 @@
+\documentclass[a4paper, 10pt]{article}
+\usepackage[utf8]{inputenc} % Change according your file encoding
+\usepackage{graphicx}
+\usepackage{url}
+
+%opening
+\title{Seminar Report: Paxy}
+\author{\textbf{Name of team members}}
+\date{\normalsize\today{}}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+Upload your report in PDF format.
+  
+Use this LaTeX template to format the report.
+  
+Validate your basic Paxy code through the review questionnaires at ATENEA.
+
+Submit a compressed file (.tar.gz) containing ALL your source code files.
+\end{center}
+
+\section{Introduction}
+
+\textit{Introduce in a couple of sentences the seminar and the main topic related to distributed systems it covers.}
+
+\section{Experiments and Questions}
+
+\subsection{Message delays}
+
+\textit{\textbf{Experiment.} Try introducing different delays in the
+\texttt{promise} messages, \texttt{vote} messages, or both sent by the acceptor. Provide figures or tables with experimental results comparing the time and the number of rounds needed to get consensus.}
+
+{\setlength{\parskip}{10pt}\noindent\textit{\textbf{Question.} Discuss the impact of message delays, and how it depends on the value of the timeout at the proposer.}}
+
+\subsection{\texttt{sorry} messages}
+
+\textit{\textbf{Experiment.} Avoid sending \texttt{sorry} messages by commenting the corresponding sentences in the acceptor. Compare the time and the number of rounds needed to get consensus with and without \texttt{sorry} messages.} 
+
+{\setlength{\parskip}{10pt}\noindent\textit{\textbf{Question.} Discuss the impact of dropping \texttt{sorry} messages, particularly, whether you could still come to an agreement.}}
+
+\subsection{Lost messages}
+
+\textit{\textbf{Experiment.} Try randomly dropping \texttt{promise} messages, \texttt{vote} messages, or both in the acceptor. Provide figures or tables with experimental results comparing the time and the number of rounds needed to get consensus.}
+ 
+{\setlength{\parskip}{10pt}\noindent\textit{\textbf{Question.} Discuss the impact of dropping messages, and indicate the percentage of messages we can drop until consensus is no longer possible.}}
+
+\subsection{Number of \textit{acceptors} and \textit{proposers}}
+
+\textit{\textbf{Experiment.} Try increasing the number of acceptors and proposers. Provide figures or tables with experimental results comparing the time and the number of rounds needed to get consensus.}
+
+{\setlength{\parskip}{10pt}\noindent\textit{\textbf{Question.} Discuss the impact of having more acceptors while keeping the same number of proposers and having more proposers while keeping the same number of acceptors. Refer also to the fault tolerance and the message traffic.}}
+
+\subsection{Distributed execution}
+
+\textit{\textbf{Code.} Discuss the changes needed in the \texttt{paxy} module to create the proposers in a remote Erlang instance (named \texttt{paxy-pro}) and to ensure that they can connect correctly to the acceptors, which must be created in a different remote Erlang instance (named \texttt{paxy-acc}).}
+
+{\setlength{\parskip}{10pt}\noindent\textit{\textbf{Experiment.} Record a video providing empirical evidence of the distributed execution working properly.}}
+
+\subsection{Fault tolerance}
+
+\textit{\textbf{Code.} Discuss the changes needed in the acceptor to make it fault tolerant.}
+
+{\setlength{\parskip}{10pt}\noindent\textit{\textbf{Experiment.} Record a video demonstrating that a crashed acceptor can recover successfully with exactly the same state it had before failing.}}
+
+\subsection{Improvement based on \texttt{sorry} messages}
+
+\textit{\textbf{Code.} Discuss the changes needed in the \texttt{collect/4} and \texttt{vote/2} procedures in the proposer.}
+ 
+{\setlength{\parskip}{10pt}\noindent\textit{\textbf{Experiment.} Compare the time needed to get consensus with and without the improvement.}}
+
+\section{Personal opinion}
+
+\textit{Provide your personal opinion of the seminar, indicating whether it should be included in next year's course or not.}
+
+\end{document}
