@@ -1,0 +1,8 @@
+build/
+experiments/runs/
+*.beam
+*.aux
+*.fls
+*.fdb_latexmk
+*.log
+*.out
