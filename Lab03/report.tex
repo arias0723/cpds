@@ -47,10 +47,8 @@
 %opening
 \title{Seminar Report: Paxy}
 \author{
-  \textbf{Alessandro Fazio} -- alessandro.fazio@estudiantat.upc.edu \\
+  \textbf{Shahroz Ali} -- shahroz.ali@estudiantat.upc.edu \\
   \textbf{Jose Ricardo Arias Perez} -- jose.ricardo.arias@estudiantat.upc.edu \\[4pt]
-  Group: M2-It1-gr11 \\
-  Concurrency, Parallelism and Distributed Systems (CPDS) -- FIB, UPC
 }
 \date{\normalsize November 22nd, 2026}
 
@@ -110,11 +108,11 @@ rounds (mean / max)  & 3.85 / 6 & 2.85 / 3 & 2.85 / 3 & 3.05 / 4 & 2.90 / 3 & 2.
 \label{tab:timeout}
 \end{table}
 
-\textbf{Question.} The algorithm always terminates, and with the default timeout the number of rounds does not grow ($\approx$\,2.8--3 rounds for any delay up to 2000\,ms). Only the time grows, roughly linearly with $D$: from 3.7\,s to 6.9\,s (promise), 4.7\,s (vote) and 7.8\,s (both). Delaying \texttt{promise} costs more than delaying \texttt{vote}, because every ballot, including the ones that fail, waits for promises, while only the ballots that reach phase~2 wait for votes.
+\textbf{Question.} The algorithm always terminates, and with the default timeout the number of rounds does not grow. Only the time grows, roughly linearly with $D$. Delaying \texttt{promise} costs more than delaying \texttt{vote}, because every ballot, including the ones that fail, waits for promises, while only the ballots that reach phase~2 wait for votes.
 
 Rounds do not increase even when $D$ equals the timeout because (i) a proposer only needs the 3 fastest of 5 replies, and (ii) the \texttt{after} clause in \texttt{collect}/\texttt{vote} restarts on every received message, so a phase aborts only if the \emph{gap} between two consecutive replies exceeds the timeout. Delays only cause extra rounds when they are of the order of the timeout or larger. With delays up to 500\,ms and a timeout of 250\,ms, the mean rises to 3.85 rounds (max 6): proposers give up on ballots that would have succeeded, and they still reach consensus.
 
-The timeout has a much stronger effect on the time than the delays (Table~\ref{tab:timeout}). Most of the time is spent by losing proposers waiting for a timeout, so a shorter timeout makes consensus much faster: 1.9\,s at 250\,ms against 8.8\,s at 4000\,ms. The trade-off is that a timeout below the typical message delay causes premature aborts, more rounds and more traffic. If the timeout is far below the delay, no quorum is ever collected in time and the system livelocks. The timeout should therefore be somewhat above the expected round-trip time.
+The timeout has a much stronger effect on the time than the delays (Table~\ref{tab:timeout}). Most of the time is spent by losing proposers waiting for a timeout, so a shorter timeout makes consensus much faster. The trade-off is that a timeout below the typical message delay causes premature aborts, more rounds and more traffic. If the timeout is far below the delay, no quorum is ever collected in time and the system livelocks. The timeout should therefore be somewhat above the expected round-trip time.
 
 \subsection{\texttt{sorry} messages}
 
@@ -136,7 +134,7 @@ with \texttt{sorry} (improved proposer)   & 20/20 & 0.02 & 2.50 \\
 \label{tab:sorry}
 \end{table}
 
-\textbf{Question.} Yes, agreement is still reached in every trial, with the same time and number of rounds as with \texttt{sorry} messages (the small differences are within the trial-to-trial spread of about $\pm$0.8\,s). This is expected: the basic \texttt{collect}/\texttt{vote} receive a \texttt{sorry} and simply keep waiting, so these messages carry no information the proposer uses. A proposer that cannot get a quorum notices it only through the timeout in both cases. Paxos does not need \texttt{sorry} messages for safety or liveness, since a timeout always ends a ballot that cannot succeed. They are only an optimisation, and they only help when the proposer uses them (last row, and Section~\ref{sec:improvement}).
+\textbf{Question.} Yes, agreement is still reached in every trial, with the same time and number of rounds as with \texttt{sorry} messages. This is expected: the basic \texttt{collect}/\texttt{vote} receive a \texttt{sorry} and simply keep waiting, so these messages carry no information the proposer uses. A proposer that cannot get a quorum notices it only through the timeout in both cases. Paxos does not need \texttt{sorry} messages for safety or liveness, since a timeout always ends a ballot that cannot succeed.
 
 \subsection{Lost messages}
 
