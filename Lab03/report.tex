@@ -268,11 +268,9 @@ start_dist(Sleep) ->
   end).
 \end{lstlisting}
 
-On our machine the short host name resolved to LAN addresses where \texttt{epmd} was not reachable (\texttt{net\_adm:ping} returned \texttt{pang}). Starting all nodes with an explicit host (\texttt{-sname paxy-acc@localhost}, \texttt{paxy-pro@localhost}, \texttt{paxy@localhost}) solved it, with no change in the code.
+\textbf{Experiment.} We ran \texttt{paxy:start\_dist([500,1000,1500])} with three nodes. The acceptors registered on \texttt{paxy-acc}, the proposers ran on \texttt{paxy-pro}, and all three proposers decided the same value (red; \texttt{fry} in round 1, \texttt{bender} and \texttt{leela} in round 2).
 
-\textbf{Experiment.} We ran \texttt{paxy:start\_dist([500,1000,1500])} with three nodes. The acceptors registered on \texttt{paxy-acc}, the proposers ran on \texttt{paxy-pro}, and all three proposers decided the same value (red; \texttt{fry} in round 1, \texttt{bender} and \texttt{leela} in round 2). \texttt{paxy:crash\_dist(marge)} crashed and recovered an acceptor on the remote node, and \texttt{stop\_dist()} stopped everything and left no state files behind.
-
-\noindent\textbf{Video:} \textcolor{red}{\textbf{[TODO: link to the video of the distributed execution]}}
+\noindent\textbf{Video:} Attached with the source code.
 
 \subsection{Fault tolerance}
 
@@ -301,9 +299,9 @@ init(Name, na) ->                          % restart after a crash
           reply(Proposer, {promise, Round, Voted, Value}, ...),
 \end{lstlisting}
 
-\textbf{Experiment.} \texttt{bench:ft\_test()} drives acceptor \texttt{homer} by hand. It promises \texttt{\{3,fry\}}, votes red in \texttt{\{3,fry\}}, and promises \texttt{\{5,leela\}}. Then it is crashed with \texttt{paxy:crash(homer)}. After the restart, \texttt{homer} printed \texttt{RECOVERED promised \{5,leela\} voted \{3,fry\} colour \{255,0,0\}}, its panel showed the same values again, it refused \texttt{prepare \{4,bender\}} (\texttt{sorry}), and it answered \texttt{prepare \{6,bender\}} with \texttt{\{promise, \{6,bender\}, \{3,fry\}, \{255,0,0\}\}}. So it recovered exactly the state it had before failing. After \texttt{stop} the state file was gone.
+\textbf{Experiment.} We crashed with \texttt{paxy:crash(homer)}. After the restart, \texttt{homer} printed \texttt{RECOVERED promised \{5,leela\} voted \{3,fry\} colour \{255,0,0\}}, its panel showed the same values again. So it recovered exactly the state it had before failing. After \texttt{stop} the state file was gone.
 
-\noindent\textbf{Video:} \textcolor{red}{\textbf{[TODO: link to the video of a crash and recovery]}}
+\noindent\textbf{Video:} Attached with the source code.
 
 \subsection{Improvement based on \texttt{sorry} messages}
 \label{sec:improvement}
@@ -345,8 +343,6 @@ The improvement makes consensus much faster: \textbf{160$\times$} faster in the 
 
 \section{Personal opinion}
 
-\textcolor{red}{\textbf{[TODO: write your own opinion. Draft below, edit or replace.]}}
-
-We found this seminar one of the most instructive of the course. Paxos is usually explained in the abstract, and filling in the missing pieces of the acceptor and the proposer made us understand why each rule exists: why a promise must report the highest voted ballot, why the proposer must adopt that value, and why voting does not change the promise. The experiments were equally useful. Seeing that no amount of delay or message loss ever produced two different decisions, while the time and number of rounds grew quickly, made the difference between safety and liveness very concrete. The GUI helps a lot to follow the algorithm. The distributed and fault-tolerance parts connect the exercise with how real systems are deployed. We think it should be kept in next year's course.
+The GUI helps a lot to follow the algorithm. The distributed and fault-tolerance parts connect the exercise with how real systems are deployed. We think it should be kept in next year's course, and we also suggest Raft as it is designed to be easy to understand.
 
 \end{document}
