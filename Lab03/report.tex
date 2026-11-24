@@ -62,7 +62,7 @@ This seminar implements Paxos, the classic protocol for \emph{consensus}: a grou
 
 % \paragraph{Methodology.} To get repeatable numbers we wrote a headless benchmark (\texttt{experiments/bench.erl}). It runs the \emph{unmodified} \texttt{acceptor} and \texttt{proposer} modules, but replaces the wx panels with a process that ignores every message. Each experimental variant (delay, drop ratio, timeout, \dots) is selected with a compile-time flag (e.g.\ \texttt{erlc -Dpromise\_delay=500}), so the default build is the normal code. Every configuration was run 20 times. In each trial all proposers start at the same time (initial sleep 0), which is the worst case for contention. A trial reaches \emph{consensus} when every proposer has decided within 60\,s. We report the mean time until the last proposer decides, and the number of rounds that proposer needed (the first round, \texttt{\{0,Name\}}, counts as round~1). Unless stated otherwise: 5 acceptors, 3 proposers, timeout 2000\,ms, and the \emph{basic} proposer of the statement (\texttt{sorry} messages do not abort a ballot). \texttt{experiments/run\_experiments.sh} reproduces all 62 configurations (1240 trials) in about 18 minutes. \textbf{In all 1240 trials, all proposers that decided chose the same value}: none of the perturbations below ever broke safety.
 
-\paragraph{Baseline:} The three proposers need on average 2.8 rounds and \textbf{3.7\,s} to decide. Almost all of that time is spent waiting for timeouts. The proposer with the highest round wins at once, but every other proposer receives \texttt{sorry} messages for its round. The basic code ignores them, so the losing proposers only notice the failure after the 2\,s timeout, and this happens about twice per trial.
+\paragraph{Baseline:} Each configuration was run 20 times with all proposers starting at once. \emph{Time} is the mean time until the last proposer decides. \emph{Rounds} is the number of ballots that this last proposer needed (its first ballot \texttt{\{0,Name\}} counts as round~1), averaged over the 20 trials; where a maximum is given, it is the largest value over those trials. With 5 acceptors and 3 proposers, consensus takes on average 2.8 rounds and \textbf{3.7\,s}. Almost all of that time is spent waiting for timeouts. The proposer with the highest round wins at once, but the others receive \texttt{sorry} messages for their round. The basic code ignores them, so a losing proposer only notices the failure after the 2\,s timeout. The last proposer to decide typically goes through two such timeouts one after the other, which is why the median time is 4.06\,s.
 
 \section{Experiments and Questions}
 
@@ -160,7 +160,7 @@ with \texttt{sorry} (improved proposer)   & 20/20 & 0.02 & 2.50 \\
 \legend{promise dropped, vote dropped, both dropped}
 \end{axis}
 \end{tikzpicture}
-\caption{Lost messages (mean over the trials that reached consensus within 60\,s).}
+\caption{Lost messages (mean over the trials that reached consensus within 60\,s). The 60\% ``both dropped'' point comes from only 9 of the 20 trials, so it understates the real cost.}
 \label{fig:drop}
 \end{figure}
 
@@ -180,13 +180,13 @@ drop ratio $p$ & promise & vote & both & max rounds & $P(\text{ballot succeeds})
 60\% & 20/20 & 20/20 & 9/20  & 13 & 0.10 \\
 \bottomrule
 \end{tabular}
-\caption{Trials (out of 20) that reached consensus, and the probability that a single uncontended ballot gets a quorum of 3 out of 5 replies in both phases.}
+\caption{Trials (out of 20) that reached consensus, and the probability that a single uncontended ballot gets a quorum of 3 out of 5 replies in both phases. The 19/20 for ``vote'' at 50\% against 20/20 at 60\% is random variation between runs.}
 \label{tab:drop}
 \end{table}
 
 \textbf{Question.} Losing messages never compromises safety (every trial agreed on one value). It only hurts liveness: a lost reply costs a timeout and possibly a new round. Up to 10\% loss there is almost no visible effect, because 5 acceptors give 2 spare replies per phase. From there the number of rounds and the time grow faster and faster, and dropping both kinds of message hurts much more than dropping one, since a ballot must survive \emph{two} quorums. With 5 acceptors the probability that a single ballot succeeds is 0.70 at 30\%, 0.25 at 50\% and 0.10 at 60\% (Table~\ref{tab:drop}).
 
-In theory consensus remains \emph{possible} for any $p<100\%$: each ballot succeeds with non-zero probability. In practice the limit is much lower because the proposer's exponential backoff doubles after each failed ballot ($10\cdot2^{k}$\,ms). 
+In theory consensus remains \emph{possible} for any $p<100\%$: each ballot succeeds with non-zero probability. In practice the limit is much lower: every failed ballot costs a full 2\,s timeout (lost replies produce no \texttt{sorry}), and the randomised backoff of up to $10\cdot2^{k}$\,ms grows after each failure, so at 60\% the 60\,s budget is exhausted.
 
 % After 12--13 failed rounds the random sleep can reach 20--40\,s, which is why no trial got past 13 rounds before our 60\,s limit. With our parameters, consensus is reliable up to about \textbf{40\%} loss (always within $\sim$\,10\,s on average). It starts failing at \textbf{50\%} of both messages (1 trial out of 20 missed the limit). At \textbf{60\%} of both it is no longer practical (only 9 of 20 trials decided within 60\,s, after up to 13 rounds). Dropping only one message type is tolerated up to 60\%. Beyond about 70\%, a ballot succeeds less than 3\% of the time and consensus is effectively impossible.
 
@@ -230,23 +230,23 @@ In theory consensus remains \emph{possible} for any $p<100\%$: each ballot succe
 \legend{basic proposer, improved proposer}
 \end{axis}
 \end{tikzpicture}
-\caption{Scaling the number of proposers (top) and acceptors (bottom).}
+\caption{Scaling the number of proposers (top) and acceptors (bottom). The improved proposer was only measured up to 10 proposers and at 3, 5, 15 and 51 acceptors.}
 \label{fig:scale}
 \end{figure}
 
 \textbf{Question.} \emph{More acceptors, same proposers.} The number of rounds barely changes (2.8 with 3 acceptors, 2.95 with 51): rounds are caused by \emph{contention between proposers}, and that does not depend on how many acceptors there are. The time grows slowly, because each phase has to send and receive more messages (and each acceptor writes its state to disk). The benefit is \emph{fault tolerance}: with $N$ acceptors and a quorum of $\lfloor N/2\rfloor+1$, Paxos tolerates $\lfloor (N-1)/2\rfloor$ crashed or unreachable acceptors (1 with 3, 2 with 5, 25 with 51). The cost is \emph{message traffic}: one ballot sends $N$ \texttt{prepare}, up to $N$ \texttt{promise}/\texttt{sorry}, $N$ \texttt{accept} and up to $N$ \texttt{vote}/\texttt{sorry}, i.e.\ about $4N$ messages per ballot, so traffic grows linearly with $N$.
 
-\emph{More proposers, same acceptors.} The rounds grow roughly linearly with the number of proposers (1 round with a single proposer, 4.25 with 5, 10 with 20). Proposers pre-empt each other: each new \texttt{prepare} with a higher round invalidates the promises another proposer is collecting, and the loser retries with a higher round, pre-empting someone else (the duelling-proposers problem of Paxos). The randomised backoff is what eventually breaks the symmetry. More proposers do not improve fault tolerance for safety, but they make progress more likely if some proposers crash. This is why real systems elect a single \emph{leader} (distinguished proposer).
+\emph{More proposers, same acceptors.} The rounds grow steadily but sublinearly with the number of proposers (1 round with a single proposer, 4.25 with 5, 6.6 with 10, 10 with 20). Proposers pre-empt each other: each new \texttt{prepare} with a higher round invalidates the promises another proposer is collecting, and the loser retries with a higher round, pre-empting someone else (the duelling-proposers problem of Paxos). The randomised backoff is what eventually breaks the symmetry. More proposers do not improve fault tolerance for safety, but they make progress more likely if some proposers crash. This is why real systems elect a single \emph{leader} (distinguished proposer).
 
 \subsection{Distributed execution}
 
-\textbf{Code.} The \texttt{acceptor} and \texttt{proposer} modules are unchanged. Only \texttt{paxy} changes, with a new \texttt{start\_dist/1} and \texttt{stop\_dist/0} (the local \texttt{start/1} is kept). The changes are:
+\textbf{Code.} The \texttt{acceptor} and \texttt{proposer} modules are unchanged for this part. Only \texttt{paxy} changes, with a new \texttt{start\_dist/1} and \texttt{stop\_dist/0} (the local \texttt{start/1} is kept). The changes are:
 
 \begin{enumerate}
-\item The Erlang runtime is started as named nodes sharing a cookie, e.g.\ \texttt{erl -sname paxy-acc -setcookie paxy} and \texttt{erl -sname paxy-pro -setcookie paxy}. \texttt{start\_dist} is called from a third node (or either of them), which hosts the GUI. It builds the full node names from its own host and first checks with \texttt{net\_adm:ping} that both nodes are reachable.
+\item The Erlang runtime is started as named nodes sharing a cookie, e.g.\ \texttt{erl -sname paxy-acc -setcookie paxy} and \texttt{erl -sname paxy-pro -setcookie paxy}. \texttt{start\_dist} can be called from any of the nodes, and the GUI runs on the node that calls it. It builds the full node names from its own host and first checks with \texttt{net\_adm:ping} that both nodes are reachable.
 \item The acceptors are created \emph{on} \texttt{paxy-acc}: we \texttt{spawn(AccNode, Fun)} a process there that runs the original \texttt{start\_acceptors/2}. Since \texttt{register/2} is local to the calling node, the names \texttt{homer}, \dots, \texttt{maggie} are registered locally on \texttt{paxy-acc}, as required.
 \item That process replies \texttt{acceptors\_ready} only after all acceptors are registered, and \texttt{start\_dist} waits for it, so the proposers are created only once the acceptors are up and running.
-\item The proposers are created on \texttt{paxy-pro} (again with \texttt{spawn(ProNode, Fun)} and the original \texttt{start\_proposers/5}). The only difference is that they receive the acceptors as remote names, \texttt{\{homer, 'paxy-acc@host'\}}, which \texttt{!} (and our \texttt{send/2}) accept directly. GUI panels and the waiting process are plain pids, which work across nodes transparently.
+\item The proposers are created on \texttt{paxy-pro} (again with \texttt{spawn(ProNode, Fun)} and the original \texttt{start\_proposers/5}). The only difference is that they receive the acceptors as remote names, \texttt{\{homer, 'paxy-acc@host'\}}, instead of local names. The fault-tolerant \texttt{send/2} of Section~2.6 calls \texttt{whereis/1} only for local atoms; a tuple \texttt{\{Name, Node\}} goes to its own \texttt{is\_tuple} clause and is sent with \texttt{!} directly. This is safe: \texttt{\{Name, Node\} ! Msg} never raises, even if the name is not registered on the remote node, so a crashed remote acceptor is simply skipped (its missing reply is handled by the timeout). GUI panels and the waiting process are plain pids, which work across nodes transparently.
 \item \texttt{stop\_dist/0} sends \texttt{stop} to every \texttt{\{Name, AccNode\}}. It waits (with \texttt{erlang:monitor} on the remote names) until they have terminated before closing the GUI, because otherwise their last panel updates, which travel over the network, may reach panels that are already destroyed.
 \end{enumerate}
 
@@ -268,7 +268,8 @@ start_dist(Sleep) ->
   end).
 \end{lstlisting}
 
-\textbf{Experiment.} We ran \texttt{paxy:start\_dist([500,1000,1500])} with three nodes. The acceptors registered on \texttt{paxy-acc}, the proposers ran on \texttt{paxy-pro}, and all three proposers decided the same value (red; \texttt{fry} in round 1, \texttt{bender} and \texttt{leela} in round 2).
+\textbf{Experiment.} We started three nodes (\texttt{paxy-acc}, \texttt{paxy-pro}, \texttt{paxy}) and ran
+\texttt{paxy:start\_dist([3000,\allowbreak 6000,\allowbreak 9000])} from \texttt{paxy-pro}, which therefore hosted the GUI. \texttt{registered()} on \texttt{paxy-acc} lists \texttt{homer}, \texttt{marge}, \texttt{bart}, \texttt{lisa} and \texttt{maggie}, and the proposers ran on \texttt{paxy-pro}. With 3\,s between proposer starts, no two proposers were active at the same time, so the only refusals came from the promise left by the previous proposer. Fry decided red in its first ballot \texttt{\{0,fry\}}. Bender's first ballot \texttt{\{0,bender\}} was refused because it is lower than \texttt{\{0,fry\}}, and bender decided red in \texttt{\{1,bender\}}. Leela's \texttt{\{0,leela\}} was refused because it is lower than \texttt{\{1,bender\}}. Leela proposed blue but, as Paxos requires, adopted the already voted red and decided it in \texttt{\{1,leela\}}. The total time was 9037\,ms.
 
 \noindent\textbf{Video:} Attached with the source code.
 
@@ -277,7 +278,7 @@ start_dist(Sleep) ->
 \textbf{Code.} The acceptor stores \texttt{\{Promised, Voted, Value, PanelId\}} with the \texttt{pers} module (a \texttt{dets} table named after the acceptor), and the four requirements are met as follows:
 
 \begin{enumerate}
-\item \emph{Most up-to-date state on failure.} The state is written \emph{before} replying (write-ahead). A crash can therefore never lose a promise or vote that a proposer already received. The \texttt{sync} also protects against the whole Erlang node dying, not only the acceptor process.
+\item \emph{Most up-to-date state on failure.} The state is written \emph{before} replying (write-ahead). A crash can therefore never lose a promise or vote that a proposer already received. \texttt{save/5} calls \texttt{pers:store} and then \texttt{dets:sync} before the reply is sent, so the write is on disk and not only in the \texttt{dets} buffer. This also protects against the whole Erlang node dying, not only the acceptor process.
 \item \emph{Only saved when modified.} \texttt{save/5} is called only when the state changes: a new promise, or a vote for a ballot higher than \texttt{Voted}. Refusals, and votes for lower ballots, do not write. The fresh initial state is written once in \texttt{init}, so the \texttt{PanelId} is on disk even if the acceptor crashes before its first promise.
 \item \emph{Removed on successful termination.} On \texttt{stop} the acceptor runs \texttt{pers:close} and \texttt{pers:delete}.
 \item \emph{GUI always shows the current state.} A restarted acceptor is created with \texttt{PanelId = na}. \texttt{init(Name, na)} reads the whole state from disk, including the panel pid, and repaints the panel immediately.
@@ -299,7 +300,7 @@ init(Name, na) ->                          % restart after a crash
           reply(Proposer, {promise, Round, Voted, Value}, ...),
 \end{lstlisting}
 
-\textbf{Experiment.} We crashed with \texttt{paxy:crash(homer)}. After the restart, \texttt{homer} printed \texttt{RECOVERED promised \{5,leela\} voted \{3,fry\} colour \{255,0,0\}}, its panel showed the same values again. So it recovered exactly the state it had before failing. After \texttt{stop} the state file was gone.
+\textbf{Experiment.} After all three proposers had decided, we crashed \texttt{homer} with \texttt{paxy:crash(homer)}. The restarted acceptor printed \texttt{RECOVERED promised \{1,leela\} voted \{1,leela\} colour \{255,0,0\}}, exactly its state before the crash, and its panel was repainted with the same values. To check that the recovered promise is actually enforced, we then sent \texttt{homer ! \{prepare, self(), \{0,test\}\}}. It replied \texttt{\{sorry,\{prepare,\{0,test\}\}\}} because \texttt{\{0,test\}} is lower than the stored promise \texttt{\{1,leela\}}.
 
 \noindent\textbf{Video:} Attached with the source code.
 
@@ -339,7 +340,7 @@ configuration & time (s) & rounds & time (s) & rounds \\
 \label{tab:improvement}
 \end{table}
 
-The improvement makes consensus much faster: \textbf{160$\times$} faster in the default setting (3.7\,s to 23\,ms) and 24--100$\times$ with more proposers. Without it, a proposer pre-empted by a higher round waits the full 2\,s timeout although the refusals have already arrived. With it, the proposer detects the failure as soon as the third \texttt{sorry} arrives and retries after a short backoff. The number of rounds stays about the same (contention is unchanged), so the gain is that no time is wasted per failed round. With message delays the speed-up is smaller (2.6$\times$), and the number of rounds even grows (2.9 to 5.25). Proposers now retry so quickly that they pre-empt each other more often while slow promises are still in flight, but this still takes much less time than waiting for timeouts. As shown in Table~\ref{tab:sorry}, the improvement only helps when acceptors actually send \texttt{sorry} messages.
+The improvement makes consensus much faster: \textbf{160$\times$} faster in the default setting (3.7\,s to 23\,ms), 24--100$\times$ with more proposers, and 15$\times$ with 51 acceptors (4.16\,s to 0.27\,s), where the larger number of messages per ballot takes a bigger share of the time. Without it, a proposer pre-empted by a higher round waits the full 2\,s timeout although the refusals have already arrived. With it, the proposer detects the failure as soon as the third \texttt{sorry} arrives and retries after a short backoff. The number of rounds stays about the same (contention is unchanged), so the gain is that no time is wasted per failed round. With message delays the speed-up is smaller (2.6$\times$), and the number of rounds even grows (2.9 to 5.25). Proposers now retry so quickly that they pre-empt each other more often while slow promises are still in flight, but this still takes much less time than waiting for timeouts. As shown in Table~\ref{tab:sorry}, the improvement only helps when acceptors actually send \texttt{sorry} messages.
 
 \section{Personal opinion}
 

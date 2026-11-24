@@ -189,7 +189,12 @@ stop_dist() ->
             Ref
           end || Name <- ?AccRegister],
   [receive {'DOWN', Ref, _, _, _} -> ok after 2000 -> ok end || Ref <- Refs],
-  stop(gui).
+  %% The GUI lives on whichever node called start_dist, which need not be
+  %% this one: ask every connected node (sending to an unregistered
+  %% remote name is silently ignored).
+  stop(gui),
+  [{gui, N} ! stop || N <- nodes()],
+  ok.
 
 %% Run crash/1 on the acceptors' node.
 crash_dist(Name) ->
